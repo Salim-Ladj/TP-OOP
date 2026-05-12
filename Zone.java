@@ -2,14 +2,12 @@ import java.util.List;
 import java.util.ArrayList;
 
 public abstract class Zone implements Suspendable {
-    // Attributes
     protected String code;
     protected String name;
     protected ZoneStatus status;
     protected ArrayList<Sensor> sensors; 
     protected ProductionRecord productionRecord;
 
-    // Constructor
     public Zone(String code, String name) {
         this.code = code;
         this.name = name;
