@@ -14,12 +14,7 @@ public class LivestockZone extends Zone {
         this.numberOfAnimals = 0;
     }
 
-    public void setFeedingProgram(FeedingProgram fp) {
-        this.feedingProgram = fp;
-    }
-    public FeedingProgram getFeedingProgram(){
-        return this.feedingProgram;
-    }
+   
     // Methods
     @Override
     public void addEntity(Object entity) {
@@ -34,5 +29,15 @@ public class LivestockZone extends Zone {
         System.out.println("Livestock Zone: " + name);
         System.out.println("Status: " + status);
         System.out.println("Number of Animals: " + numberOfAnimals);
+    }
+    //Getters and Setters
+    public List<Animal> getAnimals() {
+        return animals;
+    }
+    public void setFeedingProgram(FeedingProgram fp) {
+        this.feedingProgram = fp;
+    }
+    public FeedingProgram getFeedingProgram(){
+        return this.feedingProgram;
     }
 }

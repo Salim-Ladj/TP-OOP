@@ -49,4 +49,5 @@ public abstract class Zone implements Suspendable {
     public String getName() { return name; }
     public ZoneStatus getStatus() { return status; }
     public ProductionRecord getProductionRecord() { return productionRecord; }
+    public List<Sensor> getSensors() { return sensors; }
 }

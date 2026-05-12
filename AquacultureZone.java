@@ -38,7 +38,7 @@ public class AquacultureZone extends Zone {
         System.out.println("Number of Aquatic Species: " + numberOfAnimals);
     }
 
-    public void monitorWaterParameters() {
-        // Logic to specifically query temperature and dissolved oxygen sensors
+    public void sensorReport() {
+        // Call sensor methos
     }
 }

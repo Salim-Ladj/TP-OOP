@@ -3,7 +3,7 @@ import java.time.LocalDate;
 public class ProductionRecord {
     // Attributes
     private double amount;
-    private String unit; // e.g., "Liters", "kg", "Units"
+    private String unit; // "Liters", "kg", "Units"
     private LocalDate date;
     private String description;
     private ProductionType type; 
@@ -26,5 +26,20 @@ public class ProductionRecord {
         String Record = " Date :"+formattedDate + " \n Amount : " + formattedAmount + " " + unit + " \n Description: " + description + " \n Type: " + type;
         return Record; // Placeholder for formatted string
     }
-
+    // Getters and Setters
+    public double getAmount() {
+        return amount;
+    }
+    public String getUnit() {
+        return unit;
+    }
+    public LocalDate getDate() {
+        return date;
+    }
+    public String getDescription() {
+        return description;
+    }
+    public ProductionType getType() {
+        return type;
+    }
 }

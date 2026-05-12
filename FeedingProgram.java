@@ -24,4 +24,7 @@ public class FeedingProgram {
     // Getters and Setters
     public String getFeedType() { return feedType; }
     public void setFeedType(String feedType) { this.feedType = feedType; }
+    public double getQuantityPerMeal() { return quantityPerMeal; }
+    public void setQuantityPerMeal(double quantityPerMeal) { this.quantityPerMeal = quantityPerMeal; }
+    
 }

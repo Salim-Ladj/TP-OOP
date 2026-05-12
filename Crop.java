@@ -29,11 +29,22 @@ public class Crop {
         this.currentStage = newStage;
     }
     
-    public String generateStatusReport() { 
-        return ""; 
-    }
 
     public boolean checkSoilRequirements(double ph, double moisture) { 
+        if (ph >= minPH && ph <= maxPH && moisture >= minMoisture && moisture <= maxMoisture) {
+            System.out.println("Soil conditions are optimal for " + species);
+            return true; 
+        }
+        if (ph < minPH) {
+            System.out.println("Soil is too acidic for " + species);
+        } else if (ph > maxPH) {
+            System.out.println("Soil is too alkaline for " + species);
+        }
+        if (moisture < minMoisture) {
+            System.out.println("Soil moisture is too low for " + species);
+        } else if (moisture > maxMoisture) {
+            System.out.println("Soil moisture is too high for " + species);
+        }
         return false; 
     }
 }

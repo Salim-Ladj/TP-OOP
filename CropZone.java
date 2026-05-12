@@ -28,6 +28,11 @@ public class CropZone extends Zone {
     }
 
     public void generateCropStatusReport() {
-        // Logic to iterate through crops and print their current growth stages
+        // Need sensor methods
     }
+    //getters and setters
+    public List<Crop> getCrops() {
+        return crops;
+    }
+    
 }
