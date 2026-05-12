@@ -28,11 +28,11 @@ public class Farm {
     public Optional<Zone> getZoneByCode(String zoneCode) {
         return zones.stream().filter(z -> z.getCode().equals(zoneCode)).findFirst();
     }
-    public boolean deactivateZone(String zoneCode) { // Paramètre renommé à zoneCode
+    public boolean deactivateZone(String zoneCode) { 
         Optional<Zone> zoneOpt = getZoneByCode(zoneCode);
         if (zoneOpt.isPresent()) {
             zoneOpt.get().suspend(); 
-            System.out.println("Zone " + zoneCode + " désactivée.");
+            System.out.println("Zone " + zoneCode + " deactivated.");
             return true;
         }
         System.out.println("Zone " + zoneCode + " not found for deactivation.");
@@ -61,6 +61,7 @@ public class Farm {
                                        LocalDateTime startDate, LocalDateTime endDate) {
         return AlertManager.getAlertHistory(zoneCode, sensorUniqueCodePartial, severityLevel, startDate, endDate);
     }
+
 
     public boolean acknowledgeAlert(int alertId) {
         return AlertManager.acknowledgeAlert(alertId);
