@@ -52,4 +52,10 @@ public abstract class Sensor{
         this.lastValue = newValue;
         this.lastReadingTime = LocalDateTime.now();
     }
+    public void suspend() {
+        changeStatus(SensorStatus.SUSPENDED);
+    }
+    public void reactivate() {
+        changeStatus(SensorStatus.ACTIVE);
+    }
 }
