@@ -12,14 +12,13 @@ public class AlertManager {
     public static void createAlert(String sensorUniqueCode, String zoneId, double readingValue, SeverityLevel severity, String message) {
         Alert newAlert = new Alert(nextAlertId++, sensorUniqueCode, zoneId, readingValue, severity, message);
         allAlerts.add(newAlert);
-        System.out.println("New Alert (" + severity + "): " + message + " - ID: " + newAlert.getAlertId());
     }
 
 
 
     public static List<Alert> getActiveAlertsSortedBySeverity() {
         return allAlerts.stream()
-                .filter(alert -> !alert.isAcknowledged()) 
+                .filter(alert -> !alert.isAcknowledged())
                 .sorted(Comparator.comparing(Alert::getSeverityLevel).reversed())
                 .collect(Collectors.toList());
     }
