@@ -10,7 +10,6 @@ public class GPSCollarSensor extends Sensor {
         this.lastValue = latitude; 
         this.lastLongitude = longitude; 
         this.lastReadingTime = LocalDateTime.now();
-        System.out.println("GPS Sensor (" + uniqueCode + ") : Lat=" + latitude + ", Lon=" + longitude + " at " + lastReadingTime);
         processReading(latitude); 
     }
 

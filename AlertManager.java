@@ -34,11 +34,11 @@ public class AlertManager {
         return false;
     }
 
-    public static List<Alert> getAlertHistory(String zoneId, String sensorUniqueCodePartial, SeverityLevel severityLevel,
+    public static List<Alert> getAlertHistory(String zoneId, String sensorUniqueCode, SeverityLevel severityLevel,
                                               LocalDateTime startDate, LocalDateTime endDate) {
         return allAlerts.stream()
                 .filter(alert -> (zoneId == null || alert.getZoneId().equals(zoneId)))
-                .filter(alert -> (sensorUniqueCodePartial == null || alert.getSensorUniqueCode().contains(sensorUniqueCodePartial)))
+                .filter(alert -> (sensorUniqueCode == null || alert.getSensorUniqueCode().contains(sensorUniqueCode)))
                 .filter(alert -> (severityLevel == null || alert.getSeverityLevel().equals(severityLevel)))
                 .filter(alert -> (startDate == null || alert.getAlertTimestamp().isAfter(startDate) || alert.getAlertTimestamp().isEqual(startDate)))
                 .filter(alert -> (endDate == null || alert.getAlertTimestamp().isBefore(endDate) || alert.getAlertTimestamp().isEqual(endDate)))
