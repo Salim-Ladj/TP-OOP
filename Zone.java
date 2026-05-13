@@ -35,11 +35,17 @@ public abstract class Zone implements Suspendable {
     @Override
     public void suspend() {
         this.status = ZoneStatus.SUSPENDED;
+        for (Sensor sensor : sensors) {
+            sensor.suspend();
+        }
     }
 
     @Override
     public void reactivate() {
         this.status = ZoneStatus.ACTIVE;
+        for (Sensor sensor : sensors) {
+            sensor.reactivate();
+        }
     }
 
     // Getters and Setters
