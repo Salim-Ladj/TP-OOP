@@ -1,9 +1,8 @@
-import java.util.List;
 import java.util.ArrayList;
 
 public class CropZone extends Zone {
     // Attributes
-    private List<Crop> crops;
+    private ArrayList<Crop> crops;
 
     // Constructor
     public CropZone(String code, String name) {
@@ -35,7 +34,7 @@ public class CropZone extends Zone {
         }
     }
     //getters and setters
-    public List<Crop> getCrops() {
+    public ArrayList<Crop> getCrops() {
         return crops;
     }
 }
