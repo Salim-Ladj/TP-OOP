@@ -28,9 +28,9 @@ public class Farm {
         return zones.stream().filter(z -> z.getCode().equals(zoneCode)).findFirst();
     }
     public boolean deactivateZone(String zoneCode) { 
-        Optional<Zone> zoneOpt = getZoneByCode(zoneCode);
-        if (zoneOpt.get().getStatus() == ZoneStatus.ACTIVE) {
-            zoneOpt.get().suspend(); 
+        Optional<Zone> zone = getZoneByCode(zoneCode);
+        if (zone.get().getStatus() == ZoneStatus.ACTIVE) {
+            zone.get().suspend(); 
             return true;
         }
         System.out.println("Zone " + zoneCode + " not found for deactivation.");
