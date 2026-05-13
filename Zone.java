@@ -15,7 +15,7 @@ public abstract class Zone implements Suspendable {
         this.sensors = new ArrayList<>();
     }
 
-    // Abstract Methods (to be implemented by CropZone, LivestockZone, etc.)
+    // Abstract Methods 
     public abstract void display();
     
     public abstract void addEntity(Object entity);

@@ -8,7 +8,7 @@ public class CropZone extends Zone {
     // Constructor
     public CropZone(String code, String name) {
         super(code, name);
-        this.crops = new ArrayList<>();
+        this.crops = new ArrayList<Crop>();
     }
 
     // Methods
@@ -28,11 +28,14 @@ public class CropZone extends Zone {
     }
 
     public void generateCropStatusReport() {
-        // Need sensor methods
+        System.out.println("Crop Status Report for Zone: " + name);
+        for (Crop crop : crops) {
+            crop.displayInfo();
+            System.out.println("-------------------------");
+        }
     }
     //getters and setters
     public List<Crop> getCrops() {
         return crops;
     }
-    
 }

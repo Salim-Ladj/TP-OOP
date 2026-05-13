@@ -1,1 +1,0 @@
-public enum CropFamily { CEREALS, VEGETABLES, FRUITS }

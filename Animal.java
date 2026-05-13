@@ -25,9 +25,9 @@ public abstract class Animal {
     // Methods
     public void logHealthEvent(String eventDescription, double currentWeight,int currentAge) {
         String event = "Age: " + currentAge + ", Weight: " + currentWeight + ", Event: " + eventDescription;
-        this.age = currentAge;
-        this.weight = currentWeight; 
-        this.healthHistory.add(event);
+        age = currentAge;
+        weight = currentWeight; 
+        healthHistory.add(event);
     }
     public void displayHealthHistory() {
         System.out.println("Health History for " + species + " (ID: " + uniqueNumber + "):");

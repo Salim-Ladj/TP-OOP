@@ -12,19 +12,20 @@ public class ProductionRecord {
     public ProductionRecord(String unit, ProductionType type) {
         this.unit = unit;
         this.type = type;
-        this.date = LocalDate.now(); // Default to current date
+        this.date = LocalDate.now(); 
      }
 
     // Methods
-    public void record(double value, String note) { 
-        this.amount = value;
-        this.description = note;
-    }
     public String getRecord() { 
         String formattedDate = date.toString(); 
         String formattedAmount = String.format("%.2f", amount);
         String Record = " Date :"+formattedDate + " \n Amount : " + formattedAmount + " " + unit + " \n Description: " + description + " \n Type: " + type;
-        return Record; // Placeholder for formatted string
+        return Record; 
+    }
+    public void updateRecord(double value, String note) { 
+        this.amount = value;
+        this.description = note;
+        this.date = LocalDate.now(); 
     }
     // Getters and Setters
     public double getAmount() {
