@@ -36,9 +36,9 @@ public class Crop {
             return true; 
         }
         if (ph < minPH) {
-            System.out.println("Soil is too acidic for " + species);
+            System.out.println("Soil is too low for " + species);
         } else if (ph > maxPH) {
-            System.out.println("Soil is too alkaline for " + species);
+            System.out.println("Soil is too high for " + species);
         }
         if (moisture < minMoisture) {
             System.out.println("Soil moisture is too low for " + species);

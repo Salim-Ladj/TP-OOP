@@ -37,4 +37,7 @@ public class AquacultureZone extends Zone {
         System.out.println("Status: " + status);
         System.out.println("Number of Aquatic Species: " + numberOfAnimals);
     }
+    public List<Animal> getAnimals() {
+        return species;
+    }
 }
