@@ -39,7 +39,6 @@ public abstract class Sensor{
     }
     public void changeStatus(SensorStatus newStatus) { 
         this.status = newStatus; 
-        System.out.println("Sensor " + uniqueCode + " status changed to " + newStatus);
     }
     public boolean isReadingWithinThreshold() {
         if (this.status != SensorStatus.ACTIVE) {
@@ -51,6 +50,7 @@ public abstract class Sensor{
     public void updateReading(double newValue) {
         this.lastValue = newValue;
         this.lastReadingTime = LocalDateTime.now();
+        processReading(newValue);
     }
     public void suspend() {
         changeStatus(SensorStatus.SUSPENDED);

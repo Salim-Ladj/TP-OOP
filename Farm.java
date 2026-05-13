@@ -23,27 +23,25 @@ public class Farm {
             return;
         }
         this.zones.add(zone);
-        System.out.println("Zone '" + zone.getName() + "' (Code: " + zone.getCode() + ") added to the farm " + this.name + ".");
     }
     public Optional<Zone> getZoneByCode(String zoneCode) {
         return zones.stream().filter(z -> z.getCode().equals(zoneCode)).findFirst();
     }
     public boolean deactivateZone(String zoneCode) { 
         Optional<Zone> zoneOpt = getZoneByCode(zoneCode);
-        if (zoneOpt.isPresent()) {
+        if (zoneOpt.get().getStatus() == ZoneStatus.ACTIVE) {
             zoneOpt.get().suspend(); 
-            System.out.println("Zone " + zoneCode + " deactivated.");
             return true;
         }
         System.out.println("Zone " + zoneCode + " not found for deactivation.");
         return false;
     }
     public void displayZonesOverview() {
-        System.out.println("\n--- Overview of Zones in Farm '" + this.name + "' ---");
         if (zones.isEmpty()) {
             System.out.println("No zones registered for this farm.");
             return;
         }
+        System.out.println("\n--- Overview of Zones in Farm '" + this.name + "' ---");
         for (Zone zone : zones) {
             String status = zone.getStatus().name();
             int numSensors = zone.getSensors().size();
@@ -51,7 +49,6 @@ public class Farm {
             System.out.println("Code: " + zone.getCode() + ", Name: " + zone.getName() + ", Type: " + zoneType +
                                ", Status: " + status + ", Sensors: " + numSensors);
         }
-        System.out.println("----------------------------------------------");
     }
     public List<Alert> getActiveAlerts() {
         return AlertManager.getActiveAlertsSortedBySeverity();
