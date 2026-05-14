@@ -5,9 +5,14 @@ public class DissolvedOxygenSensor extends Sensor {
 
     @Override
     public void processReading(double value) {
-        if (!isReadingWithinThreshold()) {
-            String message = "Dissolved Oxygen (" + uniqueCode + ") out of range. Value: " + value + ", Range: [" + getMinThreshold() + "-" + getMaxThreshold() + "]";
-            AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, SeverityLevel.CRITICAL, message);
+        Object[] result = isReadingWithinThreshold(value, this.minThres, this.maxThres);
+        if (! (Boolean) result[0]) {
+            String message = "DISSOLVED OXYGEN ALERT (" + uniqueCode + "): " + "is " + result[1] + ".";
+            if ((String) result[1] == "Critical") {
+                AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, SeverityLevel.CRITICAL, message);
+            } else if ((String) result[1] == "Warning") {
+                 AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, SeverityLevel.WARNING, message);
+            }
         } else {
             System.out.println("Dissolved Oxygen (" + uniqueCode + "): " + value + " is normal.");
         }

@@ -5,11 +5,16 @@ public class WaterTemperatureSensor extends Sensor {
 
     @Override
     public void processReading(double value) {
-        if (!isReadingWithinThreshold()) {
-            String message = "ALERT Water's Temperature (" + uniqueCode + ") out of range. Value: " + value + ", Range: [" + getMinThreshold() + "-" + getMaxThreshold() + "]";
-            AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, SeverityLevel.CRITICAL, message);
+        Object[] result = isReadingWithinThreshold(value, this.minThres, this.maxThres);
+        if (! (Boolean) result[0]) {
+            String message = "WATER TEMPERATURE ALERT (" + uniqueCode + "): " + "is " + result[1] + ".";
+            if ((String) result[1] == "Critical") {
+                AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, SeverityLevel.CRITICAL, message);
+            } else if ((String) result[1] == "Warning") {
+                 AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, SeverityLevel.WARNING, message);
+            }
         } else {
-            System.out.println("Water's Temperature (" + uniqueCode + "): " + value + " is normal.");
+            System.out.println("Water Temperature (" + uniqueCode + "): " + value + " is normal.");
         }
     }
 }

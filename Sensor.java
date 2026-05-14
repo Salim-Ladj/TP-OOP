@@ -40,11 +40,17 @@ public abstract class Sensor{
     public void changeStatus(SensorStatus newStatus) { 
         this.status = newStatus; 
     }
-    public boolean isReadingWithinThreshold() {
+    public Object[] isReadingWithinThreshold(double lastValue, double minThres, double maxThres) {
         if (this.status != SensorStatus.ACTIVE) {
-            return true;
+            return new Object[]{true, "Sensor is not active"};
         }
-        return lastValue >= minThres && lastValue <= maxThres;
+        if (lastValue < 0.8 * minThres || lastValue > 1.2 * maxThres) {
+            return new Object[]{false, "Critical"};
+        } else if (lastValue < minThres || lastValue > maxThres) {
+            return new Object[]{false, "Warning"};
+        } else {
+            return new Object[]{true, "Normal"};
+        }
     }
     public abstract void processReading(double value);
     public void updateReading(double newValue) {
