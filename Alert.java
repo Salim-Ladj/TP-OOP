@@ -34,4 +34,9 @@ public class Alert {
         this.isAcknowledged = true;
         System.out.println("Alert " + alertId + " (Sensor " + sensorUniqueCode + ") has been acknowledged.");
     }
+
+    public void dismiss() {
+        this.isAcknowledged = false; 
+        System.out.println("Alert " + alertId + " (Sensor " + sensorUniqueCode + ") has been dismissed.");
+    }
 }

@@ -29,11 +29,20 @@ public class Farm {
     }
     public boolean deactivateZone(String zoneCode) { 
         Optional<Zone> zone = getZoneByCode(zoneCode);
-        if (zone.get().getStatus() == ZoneStatus.ACTIVE) {
+        if (zone.isPresent() && zone.get().getStatus() == ZoneStatus.ACTIVE) {
             zone.get().suspend(); 
             return true;
         }
         System.out.println("Zone " + zoneCode + " not found for deactivation.");
+        return false;
+    }
+    public boolean reactivateZone(String zoneCode) { 
+        Optional<Zone> zone = getZoneByCode(zoneCode);
+        if ( zone.isPresent() && zone.get().getStatus() == ZoneStatus.SUSPENDED) {
+            zone.get().reactivate(); 
+            return true;
+        }
+        System.out.println("Zone " + zoneCode + " not found for reactivation.");
         return false;
     }
     public void displayZonesOverview() {
@@ -62,5 +71,9 @@ public class Farm {
 
     public boolean acknowledgeAlert(int alertId) {
         return AlertManager.acknowledgeAlert(alertId);
+    }
+
+    public boolean dismissAlert(int alertId) {
+        return AlertManager.dismissAlert(alertId);
     }
 }

@@ -32,7 +32,16 @@ public class AlertManager {
         System.out.println("Alert " + alertId + " not found or already acknowledged.");
         return false;
     }
-
+    public static boolean dismissAlert(int alertId) { 
+        for (Alert alert : allAlerts) {
+            if (alert.getAlertId() == alertId && alert.isAcknowledged()) { 
+                alert.dismiss();
+                return true;
+            }
+        }
+        System.out.println("Alert " + alertId + " not found or already acknowledged.");
+        return false;
+    }
     public static List<Alert> getAlertHistory(String zoneId, String sensorUniqueCode, SeverityLevel severityLevel,
                                               LocalDateTime startDate, LocalDateTime endDate) {
         return allAlerts.stream()

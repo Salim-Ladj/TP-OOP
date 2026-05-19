@@ -7,12 +7,14 @@ public abstract class Sensor{
     protected LocalDateTime lastReadingTime;
     protected double minThres;
     protected double maxThres;
-    public Sensor(String uniqueCode, String zoneID, double minThres, double maxThres){
+    protected String UnitOfMeasurement;
+    public Sensor(String uniqueCode, String zoneID, double minThres, double maxThres, String unit) {
         this.uniqueCode = uniqueCode;
         this.zoneID = zoneID;
         this.status = SensorStatus.ACTIVE;
         this.lastValue = 0.0;
         this.lastReadingTime = null;
+        this.UnitOfMeasurement = unit;
         this.minThres = minThres;
         this.maxThres = maxThres;
     }
@@ -36,6 +38,9 @@ public abstract class Sensor{
     }
     public double getMaxThreshold() { 
         return maxThres; 
+    }
+    public String getUnitOfMeasurement() { 
+        return UnitOfMeasurement; 
     }
     public void changeStatus(SensorStatus newStatus) { 
         this.status = newStatus; 
