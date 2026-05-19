@@ -31,6 +31,9 @@ public class Crop {
     
 
     public boolean checkSoilRequirements(double ph, double moisture) { 
+        if (ph < 0 || moisture < 0) {
+            throw new IllegalArgumentException("pH and moisture values must be positive.");
+        }
         if (ph >= minPH && ph <= maxPH && moisture >= minMoisture && moisture <= maxMoisture) {
             System.out.println("Soil conditions are optimal for " + species);
             return true; 

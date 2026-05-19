@@ -22,14 +22,20 @@ public abstract class Zone implements Suspendable {
 
     // Common Methods (defined in the abstract class)
     public void addSensor(Sensor sensor) {
+        if (this.status == ZoneStatus.SUSPENDED) {
+            throw new IllegalStateException("Operation Denied: Zone " + this.code + " is currently SUSPENDED.");
+        }
         if (sensor != null) {
             this.sensors.add(sensor);
         }
     }
 
-    public void setProductionRecord(ProductionRecord record) {
+    public abstract void setProductionRecord(ProductionRecord record);/*  {
+        if (this.status == ZoneStatus.SUSPENDED) {
+            throw new IllegalStateException("Operation Denied: Zone " + this.code + " is currently SUSPENDED.");
+        }
         this.productionRecord = record;
-    }
+    }*/
 
     // Interface Method Implementations
     @Override

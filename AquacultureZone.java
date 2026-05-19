@@ -15,6 +15,9 @@ public class AquacultureZone extends Zone {
     }
 
     public void setFeedingProgram(FeedingProgram fp) {
+        if (this.getStatus() == ZoneStatus.SUSPENDED) {
+            throw new IllegalStateException("Operation Denied: Zone " + this.getCode() + " is currently SUSPENDED.");
+        }
         this.feedingProgram = fp;
     }
 
@@ -25,10 +28,16 @@ public class AquacultureZone extends Zone {
     // Methods
     @Override
     public void addEntity(Object entity) {
-        if (entity instanceof Animal) {
-            this.species.add((Animal) entity);
-            this.numberOfAnimals++;
+        if (this.getStatus() == ZoneStatus.SUSPENDED) {
+            throw new IllegalStateException("Operation Denied: Zone " + this.getCode() + " is currently SUSPENDED.");
         }
+
+        // Enforcing Type Rule
+        if (!(entity instanceof Animal)) {
+            throw new IllegalArgumentException("Type Error: AquacultureZone cannot accept " + entity.getClass().getSimpleName());
+        }
+        this.species.add((Animal) entity);
+        this.numberOfAnimals++;
     }
 
     @Override
@@ -39,5 +48,16 @@ public class AquacultureZone extends Zone {
     }
     public List<Animal> getAnimals() {
         return species;
+    }
+
+    @Override
+    public void setProductionRecord(ProductionRecord record) {
+        if (this.getStatus() == ZoneStatus.SUSPENDED) {
+            throw new IllegalStateException("Operation Denied: Zone " + this.getCode() + " is currently SUSPENDED.");
+        }
+        if(record.getType() != ProductionType.AQUACULTURE) {
+            throw new IllegalArgumentException("Type Error: ProductionRecord of type " + record.getType() + " cannot be set for AquacultureZone.");
+        }
+        this.productionRecord = record;
     }
 }

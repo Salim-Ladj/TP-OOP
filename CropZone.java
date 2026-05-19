@@ -13,9 +13,15 @@ public class CropZone extends Zone {
     // Methods
     @Override
     public void addEntity(Object entity) {
-        if (entity instanceof Crop) {
-            this.crops.add((Crop) entity);
+        if (this.getStatus() == ZoneStatus.SUSPENDED) {
+            throw new IllegalStateException("Operation Denied: Zone " + this.getCode() + " is currently SUSPENDED.");
         }
+
+        // Enforcing Type Rule
+        if (!(entity instanceof Crop)) {
+            throw new IllegalArgumentException("Type Error: CropZone cannot accept " + entity.getClass().getSimpleName());
+        }
+        this.crops.add((Crop) entity);
     }
 
     @Override
@@ -36,5 +42,16 @@ public class CropZone extends Zone {
     //getters and setters
     public ArrayList<Crop> getCrops() {
         return crops;
+    }
+
+    @Override
+    public void setProductionRecord(ProductionRecord record) {
+        if (this.getStatus() == ZoneStatus.SUSPENDED) {
+            throw new IllegalStateException("Operation Denied: Zone " + this.getCode() + " is currently SUSPENDED.");
+        }
+        if(record.getType() != ProductionType.CROP_YIELD) {
+            throw new IllegalArgumentException("Type Error: ProductionRecord of type " + record.getType() + " cannot be set for CropZone.");
+        }
+        this.productionRecord = record;
     }
 }

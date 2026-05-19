@@ -23,6 +23,9 @@ public class ProductionRecord {
         return Record; 
     }
     public void updateRecord(double value, String note) { 
+        if (value < 0) {
+            throw new IllegalArgumentException("Amount must be a positive value.");
+        }
         this.amount = value;
         this.description = note;
         this.date = LocalDate.now(); 

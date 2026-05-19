@@ -13,8 +13,15 @@ public class FeedingProgram {
 
     // Methods
     public void updateSchedule(double newQuantity, int newNbMealsPerDay) {
+        if (newQuantity < 0) {
+            throw new IllegalArgumentException("Quantity per meal must be a positive value.");
+        }
+        if (newNbMealsPerDay < 0) {
+            throw new IllegalArgumentException("Number of meals per day must be a positive integer.");
+        }
         quantityPerMeal = newQuantity;
         nbMealsPerDay = newNbMealsPerDay;
+        
     }
 
     public String getFullScheduleDetails() {
