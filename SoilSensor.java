@@ -1,5 +1,5 @@
 public class SoilSensor extends Sensor {
-    public SoilSensor(String uniqueCode, String zoneId, double minSoilThreshold, double maxSoilThreshold, String unitOfMeasurement) {
+    public SoilSensor(String uniqueCode, String zoneId, double minSoilThreshold, double maxSoilThreshold, String unitOfMeasurement) throws ThresholdException {
         super(uniqueCode, zoneId, minSoilThreshold, maxSoilThreshold, unitOfMeasurement);
     }
 

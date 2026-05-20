@@ -1,5 +1,5 @@
 public class BiometricSensor extends Sensor {
-    public BiometricSensor(String uniqueCode, String zoneId, double minThreshold, double maxThreshold, String unitOfMeasurement) {
+    public BiometricSensor(String uniqueCode, String zoneId, double minThreshold, double maxThreshold, String unitOfMeasurement) throws ThresholdException {
         super(uniqueCode, zoneId, minThreshold, maxThreshold, unitOfMeasurement);
     }
 
