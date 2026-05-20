@@ -15,7 +15,10 @@ public abstract class Sensor {
     protected String UnitOfMeasurement;
     protected List<SensorReading> readings; 
 
-    public Sensor(String uniqueCode, String zoneID, double minThres, double maxThres, String unit) {
+    public Sensor(String uniqueCode, String zoneID, double minThres, double maxThres, String unit) throws ThresholdException {
+        if (minThres < 0 || maxThres < 0 || minThres >= maxThres) {
+            throw new ThresholdException("Invalid threshold values");
+        }
         this.uniqueCode = uniqueCode;
         this.zoneID = zoneID;
         this.status = SensorStatus.ACTIVE;
@@ -49,10 +52,16 @@ public abstract class Sensor {
     public double getMaxThreshold() {
         return maxThres;
     }
-    public void setMinThreshold(double minThres) {
+    public void setMinThreshold(double minThres) throws ThresholdException {
+        if (minThres < 0 || minThres >= maxThres) {
+            throw new ThresholdException("Invalid threshold values");
+        }
         this.minThres = minThres;
     }
-    public void setMaxThreshold(double maxThres) {
+    public void setMaxThreshold(double maxThres) throws ThresholdException {
+        if (maxThres < 0 || maxThres <= minThres) {
+            throw new ThresholdException("Invalid threshold values");
+        }
         this.maxThres = maxThres;
     }
     public String getUnitOfMeasurement() {

@@ -130,7 +130,7 @@ public class Farm {
         return "Sensor " + sensorUniqueCode + " status changed to " + newStatus.name() + " successfully.";
     }
 
-    public String updateSensorThresholds(String zoneCode, String sensorUniqueCode, double minThreshold, double maxThreshold, Double minLongThreshold, Double maxLongThreshold) {
+    public String updateSensorThresholds(String zoneCode, String sensorUniqueCode, double minThreshold, double maxThreshold, Double minLongThreshold, Double maxLongThreshold) throws ThresholdException {
         Optional<Zone> zoneOpt = getZoneByCode(zoneCode);
         if (zoneOpt.isEmpty()) {
             return "Zone " + zoneCode + " not found.";
@@ -159,7 +159,7 @@ public class Farm {
     }
 
     // Method to add a sensor's reading (delegating to the sensor's specific add method)
-    public String addSensorReading(String zoneCode, String sensorUniqueCode, double value) { // Renamed from updateSensorReading
+    public String addSensorReading(String zoneCode, String sensorUniqueCode, double value) throws ThresholdException { 
         Optional<Zone> zoneOpt = getZoneByCode(zoneCode);
         if (zoneOpt.isEmpty()) {
             return "Zone " + zoneCode + " not found.";
@@ -169,11 +169,10 @@ public class Farm {
             return "Sensor " + sensorUniqueCode + " not found in zone " + zoneCode + ".";
         }
 
-        return sensorOpt.get().addReading(value); // Call the addReading method
+        return sensorOpt.get().addReading(value); 
     }
 
-    // Overloaded method for GPS sensors to add both latitude and longitude
-    public String addSensorReading(String zoneCode, String sensorUniqueCode, double latitude, double longitude) { // Renamed from updateSensorReading
+    public String addSensorReading(String zoneCode, String sensorUniqueCode, double latitude, double longitude) throws ThresholdException { 
         Optional<Zone> zoneOpt = getZoneByCode(zoneCode);
         if (zoneOpt.isEmpty()) {
             return "Zone " + zoneCode + " not found.";

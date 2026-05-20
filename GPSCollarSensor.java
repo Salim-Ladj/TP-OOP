@@ -7,7 +7,7 @@ public class GPSCollarSensor extends Sensor {
     private double maxThresLong;
 
     public GPSCollarSensor(String uniqueCode, String zoneId, double minLatitudeThreshold, double maxLatitudeThreshold,
-                           double minLongitudeThreshold, double maxLongitudeThreshold, String unitOfMeasurement) {
+                           double minLongitudeThreshold, double maxLongitudeThreshold, String unitOfMeasurement) throws ThresholdException {
         super(uniqueCode, zoneId, minLatitudeThreshold, maxLatitudeThreshold, unitOfMeasurement);
         this.minThresLong = minLongitudeThreshold;
         this.maxThresLong = maxLongitudeThreshold;

@@ -3,7 +3,7 @@ import java.util.List;
  
 public class mainAli {
  
-    public static void main(String[] args) { 
+    public static void main(String[] args) throws ThresholdException { 
         Farm farm = new Farm("FARM-001", "ESI Green Valley");
         System.out.println("Farm created: " + farm.getName() + " (ID=" + farm.getFarmId() + ")\n");
  
@@ -37,7 +37,7 @@ public class mainAli {
  
         System.out.println("Sensors assigned to zones.\n");
  
-        System.out.println("--- Lecture normale (pas d'alerte attendue) ---");
+        System.out.println("--- Readings (normal) ---");
         System.out.println(tempSensor.addReading(22.0));
         System.out.println(humiditySensor.addReading(55.0));
         System.out.println(soilSensor.addReading(6.5));
@@ -46,47 +46,45 @@ public class mainAli {
         System.out.println(dissolvedOxygenSensor.addReading(8.0));
         System.out.println(gpsSensor.addGPSReading(34.0, 3.0));
  
-        System.out.println("\n--- Lecture en zone d'avertissement (warning) ---");
+        System.out.println("\n--- Readings (warning)---");
         System.out.println(tempSensor.addReading(38.0));
         System.out.println(humiditySensor.addReading(25.0));
         System.out.println(soilSensor.addReading(8.0));
  
-        System.out.println("\n--- Lecture critique (critical) ---");
+        System.out.println("\n--- Readings (critical) ---");
         System.out.println(bioSensor.addReading(50.0));
         System.out.println(waterTempSensor.addReading(5.0));
         System.out.println(dissolvedOxygenSensor.addReading(0.5));
         System.out.println(gpsSensor.addGPSReading(10.0, 20.0));
  
-        System.out.println("\n--- Alertes actives triées par gravité ---");
+        System.out.println("\n--- Active Alerts Sorted By SeverityLevel ---");
         List<Alert> activeAlerts = farm.getActiveAlerts();
         if (activeAlerts.isEmpty()) {
-            System.out.println("Aucune alerte active.");
+            System.out.println("No Active Alerts.");
         } else {
             activeAlerts.forEach(System.out::println);
         }
  
         if (!activeAlerts.isEmpty()) {
-            System.out.println("\n--- Reconnaissance et suppression d'une alerte ---");
+            System.out.println("\n--- Acknowledging and Dismissing Alert ---");
             Alert firstAlert = activeAlerts.get(0);
             System.out.println(farm.acknowledgeAlert(firstAlert.getAlertId()));
             System.out.println(farm.dismissAlert(firstAlert.getAlertId()));
         }
  
-        System.out.println("\n--- Test de changement de statut de capteur ---");
-        System.out.println("Suspension de " + tempSensor.getUniqueCode() + "...");
+        System.out.println("\n--- Change Sensor Status ---");
+        System.out.println("Suspend " + tempSensor.getUniqueCode() + "...");
         tempSensor.suspend();
         System.out.println(tempSensor.addReading(12.0));
-        System.out.println("Réactivation de " + tempSensor.getUniqueCode() + "...");
+        System.out.println("Reactivate " + tempSensor.getUniqueCode() + "...");
         tempSensor.reactivate();
         System.out.println(tempSensor.addReading(15.0));
  
-        System.out.println("\n--- Historique des alertes critiques ---");
+        System.out.println("\n--- Alerts History ---");
         List<Alert> criticalAlerts = farm.getAlertHistory(null, null, SeverityLevel.CRITICAL, null, LocalDateTime.now());
         System.out.println("Total critical alerts: " + criticalAlerts.size());
         criticalAlerts.forEach(System.out::println);
  
         System.out.println("\n========================================");
-        System.out.println("   TEST FONCTIONNEL COMPLET");
-        System.out.println("========================================");
     }
 }

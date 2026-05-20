@@ -19,7 +19,7 @@ public class AlertManager {
     public static List<Alert> getActiveAlertsSortedBySeverity() {
         return allAlerts.stream()
                 .filter(alert -> !alert.isAcknowledged()) 
-                .sorted(Comparator.comparing(Alert::getSeverityLevel).reversed()) // CRITICAL first
+                .sorted(Comparator.comparing(Alert::getSeverityLevel).reversed()) 
                 .collect(Collectors.toList());
     }
 
@@ -63,8 +63,8 @@ public class AlertManager {
         long normalCount = allAlerts.stream().filter(a -> a.getSeverityLevel() == SeverityLevel.NORMAL && !a.isAcknowledged()).count();
 
         return "Active Alerts Overview:\n" +
-               "Critical: " + criticalCount + " alerts\n" +
-               "Warning: " + warningCount + " alerts\n" +
-               "Normal: " + normalCount + " events";
+               "Critical 🔴: " + criticalCount + " alerts\n" +
+               "Warning 🟡: " + warningCount + " alerts\n" +
+               "Normal 🟢: " + normalCount + " events";
     }
 }

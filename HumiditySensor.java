@@ -1,5 +1,5 @@
 public class HumiditySensor extends Sensor { // Corrected name: RainfallSensor
-    public HumiditySensor(String uniqueCode, String zoneId, double minThreshold, double maxThreshold, String unitOfMeasurement) {
+    public HumiditySensor(String uniqueCode, String zoneId, double minThreshold, double maxThreshold, String unitOfMeasurement) throws ThresholdException {
         super(uniqueCode, zoneId, minThreshold, maxThreshold, unitOfMeasurement);
     }
 

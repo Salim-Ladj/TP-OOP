@@ -1,5 +1,5 @@
 public class TemperatureSensor extends Sensor {
-    public TemperatureSensor(String uniqueCode, String zoneId, double minTempThreshold, double maxTempThreshold, String unit) {
+    public TemperatureSensor(String uniqueCode, String zoneId, double minTempThreshold, double maxTempThreshold, String unit) throws ThresholdException {
         super(uniqueCode, zoneId, minTempThreshold, maxTempThreshold, unit);
     }
 
