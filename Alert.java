@@ -10,15 +10,15 @@ public class Alert {
     private String message;
     private boolean isAcknowledged;
 
-    public Alert(int alertID, String sensorUniqueCode, String zoneId, double readingValue, SeverityLevel severityLevel, String message) {
-        this.alertId = alertID; 
+    public Alert(int alertId, String sensorUniqueCode, String zoneId, double readingValue, SeverityLevel severityLevel, String message) {
+        this.alertId = alertId;
         this.sensorUniqueCode = sensorUniqueCode;
         this.zoneId = zoneId;
         this.alertTimestamp = LocalDateTime.now();
         this.readingValue = readingValue;
         this.severityLevel = severityLevel;
         this.message = message;
-        this.isAcknowledged = false; 
+        this.isAcknowledged = false;
     }
 
     public int getAlertId() { return alertId; }
@@ -30,13 +30,31 @@ public class Alert {
     public String getMessage() { return message; }
     public boolean isAcknowledged() { return isAcknowledged; }
 
-    public void acknowledge() {
-        this.isAcknowledged = true;
-        System.out.println("Alert " + alertId + " (Sensor " + sensorUniqueCode + ") has been acknowledged.");
+    public String acknowledge() {
+        if (!this.isAcknowledged) {
+            this.isAcknowledged = true;
+            return "Alert " + alertId + " (Sensor " + sensorUniqueCode + ") has been acknowledged.";
+        }
+        return "Alert " + alertId + " is already acknowledged.";
     }
 
-    public void dismiss() {
-        this.isAcknowledged = false; 
-        System.out.println("Alert " + alertId + " (Sensor " + sensorUniqueCode + ") has been dismissed.");
+    public String dismiss() {
+        if (this.isAcknowledged) {
+             this.isAcknowledged = false;
+             return "Alert " + alertId + " (Sensor " + sensorUniqueCode + ") has been dismissed (un-acknowledged).";
+        }
+        return "Alert " + alertId + " was not acknowledged, or already dismissed.";
+    }
+
+    @Override
+    public String toString() {
+        return "Alert ID: " + alertId +
+               ", Sensor: " + sensorUniqueCode +
+               ", Zone: " + zoneId +
+               ", Timestamp: " + alertTimestamp +
+               ", Reading: " + readingValue +
+               ", Severity: " + severityLevel +
+               ", Message: " + message +
+               ", Acknowledged: " + isAcknowledged;
     }
 }

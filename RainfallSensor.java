@@ -1,5 +1,5 @@
-public class WaterTemperatureSensor extends Sensor {
-    public WaterTemperatureSensor(String uniqueCode, String zoneId, double minThreshold, double maxThreshold, String unitOfMeasurement) {
+public class RainfallSensor extends Sensor { // Corrected name: RainfallSensor
+    public RainfallSensor(String uniqueCode, String zoneId, double minThreshold, double maxThreshold, String unitOfMeasurement) {
         super(uniqueCode, zoneId, minThreshold, maxThreshold, unitOfMeasurement);
     }
 
@@ -11,7 +11,7 @@ public class WaterTemperatureSensor extends Sensor {
         if (! (Boolean) result[0]) {
             SeverityLevel severity = statusMessage.equals("Critical") ? SeverityLevel.CRITICAL : SeverityLevel.WARNING;
             AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, severity,
-                                     "WATER TEMPERATURE ALERT (" + uniqueCode + "): " + statusMessage + " reading: " + value + " " + UnitOfMeasurement);
+                                     "RAINFALL ALERT (" + uniqueCode + "): " + statusMessage + " reading: " + value + " " + UnitOfMeasurement);
             return statusMessage + " - Alert created.";
         } else {
             return "Normal reading: " + value + " " + UnitOfMeasurement;

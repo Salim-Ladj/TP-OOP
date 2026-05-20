@@ -1,20 +1,20 @@
 public class SoilSensor extends Sensor {
-    public SoilSensor(String uniqueCode, String zoneId, double minSoilThreshold, double maxSoilThreshold, String UnitOfMeasurement) {
-        super(uniqueCode, zoneId, minSoilThreshold, maxSoilThreshold, UnitOfMeasurement);
+    public SoilSensor(String uniqueCode, String zoneId, double minSoilThreshold, double maxSoilThreshold, String unitOfMeasurement) {
+        super(uniqueCode, zoneId, minSoilThreshold, maxSoilThreshold, unitOfMeasurement);
     }
 
     @Override
-    public void processReading(double value) {
-        Object[] result = isReadingWithinThreshold(value, this.minThres, this.maxThres);
+    protected String processReading(double value) {
+        Object[] result = getReadingStatus(value);
+        String statusMessage = (String) result[1];
+
         if (! (Boolean) result[0]) {
-            String message = "SOIL ALERT (" + uniqueCode + "): " + "is " + result[1] + ".";
-            if ("Critical".equals(result[1])) {
-                AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, SeverityLevel.CRITICAL, message);
-            } else if ("Warning".equals(result[1])) {
-                 AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, SeverityLevel.WARNING, message);
-            }
+            SeverityLevel severity = statusMessage.equals("Critical") ? SeverityLevel.CRITICAL : SeverityLevel.WARNING;
+            AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, severity,
+                                     "SOIL ALERT (" + uniqueCode + "): " + statusMessage + " reading: " + value + " " + UnitOfMeasurement);
+            return statusMessage + " - Alert created.";
         } else {
-            System.out.println("Soil (" + uniqueCode + "): " + value + " is normal.");
+            return "Normal reading: " + value + " " + UnitOfMeasurement;
         }
     }
-} 
+}

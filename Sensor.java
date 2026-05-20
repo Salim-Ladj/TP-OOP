@@ -1,72 +1,111 @@
 import java.time.LocalDateTime;
-public abstract class Sensor{
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+public abstract class Sensor {
     protected String uniqueCode;
     protected String zoneID;
     protected SensorStatus status;
-    protected double lastValue;
-    protected LocalDateTime lastReadingTime;
-    protected double minThres;
-    protected double maxThres;
+    protected double minThres; 
+    protected double maxThres; 
     protected String UnitOfMeasurement;
+    protected List<SensorReading> readings; 
+
     public Sensor(String uniqueCode, String zoneID, double minThres, double maxThres, String unit) {
         this.uniqueCode = uniqueCode;
         this.zoneID = zoneID;
         this.status = SensorStatus.ACTIVE;
-        this.lastValue = 0.0;
-        this.lastReadingTime = null;
         this.UnitOfMeasurement = unit;
         this.minThres = minThres;
         this.maxThres = maxThres;
+        this.readings = new ArrayList<>(); 
     }
-    public String getUniqueCode() { 
-        return uniqueCode; 
+
+    public String getUniqueCode() {
+        return uniqueCode;
     }
-    public String getZoneId() { 
-        return zoneID; 
+    public String getZoneId() {
+        return zoneID;
     }
-    public SensorStatus getStatus() { 
-        return status; 
+    public SensorStatus getStatus() {
+        return status;
     }
-    public double getLastReading() { 
-        return lastValue; 
+
+    public Optional<Double> getLastReadingValue() {
+        return readings.isEmpty() ? Optional.empty() : Optional.of(readings.get(readings.size() - 1).getValue());
     }
-    public LocalDateTime getLastReadingTimestamp() { 
-        return lastReadingTime; 
+
+    public Optional<LocalDateTime> getLastReadingTimestamp() {
+        return readings.isEmpty() ? Optional.empty() : Optional.of(readings.get(readings.size() - 1).getTimestamp());
     }
-    public double getMinThreshold() { 
-        return minThres; 
+
+    public double getMinThreshold() {
+        return minThres;
     }
-    public double getMaxThreshold() { 
-        return maxThres; 
+    public double getMaxThreshold() {
+        return maxThres;
     }
-    public String getUnitOfMeasurement() { 
-        return UnitOfMeasurement; 
+    public void setMinThreshold(double minThres) {
+        this.minThres = minThres;
     }
-    public void changeStatus(SensorStatus newStatus) { 
-        this.status = newStatus; 
+    public void setMaxThreshold(double maxThres) {
+        this.maxThres = maxThres;
     }
-    public Object[] isReadingWithinThreshold(double lastValue, double minThres, double maxThres) {
-        if (this.status != SensorStatus.ACTIVE) {
-            return new Object[]{true, "Sensor is not active"};
-        }
-        if (lastValue < 0.8 * minThres || lastValue > 1.2 * maxThres) {
+    public String getUnitOfMeasurement() {
+        return UnitOfMeasurement;
+    }
+
+    public void changeStatus(SensorStatus newStatus) {
+        this.status = newStatus;
+    }
+
+    protected Object[] getReadingStatus(double value) {
+        if (value < 0.8 * minThres || value > 1.2 * maxThres) {
             return new Object[]{false, "Critical"};
-        } else if (lastValue < minThres || lastValue > maxThres) {
+        } else if (value < minThres || value > maxThres) {
             return new Object[]{false, "Warning"};
         } else {
             return new Object[]{true, "Normal"};
         }
     }
-    public abstract void processReading(double value);
-    public void updateReading(double newValue) {
-        this.lastValue = newValue;
-        this.lastReadingTime = LocalDateTime.now();
-        processReading(newValue);
+
+    public final String addReading(double newValue) { 
+        if (this.status != SensorStatus.ACTIVE) {
+            return "Sensor " + uniqueCode + " is " + this.status.name() + ". Reading not processed.";
+        }
+        
+        LocalDateTime now = LocalDateTime.now();
+        SensorReading newSensorReading = new SensorReading(newValue, now);
+        this.readings.add(newSensorReading);
+
+        return processReading(newValue);
     }
+
+    protected abstract String processReading(double value);
+
+    public List<SensorReading> getReadingsHistory(LocalDateTime startDate, LocalDateTime endDate) {
+        return readings.stream()
+                       .filter(reading -> (startDate == null || reading.getTimestamp().isAfter(startDate) || reading.getTimestamp().isEqual(startDate)))
+                       .filter(reading -> (endDate == null || reading.getTimestamp().isBefore(endDate) || reading.getTimestamp().isEqual(endDate)))
+                       .sorted(Comparator.comparing(SensorReading::getTimestamp).reversed())
+                       .collect(Collectors.toList());
+    }
+
+    public List<SensorReading> getAllReadings() {
+        return Collections.unmodifiableList(readings);
+    }
+
     public void suspend() {
         changeStatus(SensorStatus.SUSPENDED);
     }
     public void reactivate() {
         changeStatus(SensorStatus.ACTIVE);
+    }
+    public void markAsFaulty() {
+        changeStatus(SensorStatus.FAULTY);
     }
 }
