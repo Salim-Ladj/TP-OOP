@@ -1,21 +1,20 @@
-public class HumiditySensor extends Sensor {
-
-    public HumiditySensor(String uniqueCode, String zoneId, double minHumidityThreshold, double maxHumidityThreshold) {
-        super(uniqueCode, zoneId, minHumidityThreshold, maxHumidityThreshold);
+public class HumiditySensor extends Sensor { // Corrected name: RainfallSensor
+    public HumiditySensor(String uniqueCode, String zoneId, double minThreshold, double maxThreshold, String unitOfMeasurement) {
+        super(uniqueCode, zoneId, minThreshold, maxThreshold, unitOfMeasurement);
     }
 
     @Override
-    public void processReading(double value) {
-        Object[] result = isReadingWithinThreshold(value, this.minThres, this.maxThres);
+    protected String processReading(double value) {
+        Object[] result = getReadingStatus(value);
+        String statusMessage = (String) result[1];
+
         if (! (Boolean) result[0]) {
-            String message = "HUMIDITY ALERT (" + uniqueCode + "): " + "is " + result[1] + ".";
-            if ((String) result[1] == "Critical") {
-                AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, SeverityLevel.CRITICAL, message);
-            } else if ((String) result[1] == "Warning") {
-                 AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, SeverityLevel.WARNING, message);
-            }
+            SeverityLevel severity = statusMessage.equals("Critical") ? SeverityLevel.CRITICAL : SeverityLevel.WARNING;
+            AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, severity,
+                                     "HUMIDITY ALERT (" + uniqueCode + "): " + statusMessage + " reading: " + value + " " + UnitOfMeasurement);
+            return statusMessage + " - Alert created.";
         } else {
-            System.out.println("Humidity (" + uniqueCode + "): " + value + " is normal.");
+            return "Normal reading: " + value + " " + UnitOfMeasurement;
         }
     }
 }

@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Optional;
 import java.util.ArrayList;
 
 public abstract class Zone implements Suspendable {
@@ -54,10 +55,12 @@ public abstract class Zone implements Suspendable {
         }
     }
 
-    // Getters and Setters
     public String getCode() { return code; }
     public String getName() { return name; }
     public ZoneStatus getStatus() { return status; }
     public ProductionRecord getProductionRecord() { return productionRecord; }
     public List<Sensor> getSensors() { return sensors; }
+    public Optional<Sensor> getSensorByUniqueCode(String uniqueCode) {
+        return sensors.stream().filter(s -> s.getUniqueCode().equals(uniqueCode)).findFirst();
+    }
 }

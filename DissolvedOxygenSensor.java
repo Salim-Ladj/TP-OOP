@@ -1,20 +1,20 @@
 public class DissolvedOxygenSensor extends Sensor {
-    public DissolvedOxygenSensor(String uniqueCode, String zoneId, double minThreshold, double maxThreshold) {
-        super(uniqueCode, zoneId, minThreshold, maxThreshold);
+    public DissolvedOxygenSensor(String uniqueCode, String zoneId, double minThreshold, double maxThreshold, String unitOfMeasurement) {
+        super(uniqueCode, zoneId, minThreshold, maxThreshold, unitOfMeasurement);
     }
 
     @Override
-    public void processReading(double value) {
-        Object[] result = isReadingWithinThreshold(value, this.minThres, this.maxThres);
+    protected String processReading(double value) {
+        Object[] result = getReadingStatus(value);
+        String statusMessage = (String) result[1];
+
         if (! (Boolean) result[0]) {
-            String message = "DISSOLVED OXYGEN ALERT (" + uniqueCode + "): " + "is " + result[1] + ".";
-            if ((String) result[1] == "Critical") {
-                AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, SeverityLevel.CRITICAL, message);
-            } else if ((String) result[1] == "Warning") {
-                 AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, SeverityLevel.WARNING, message);
-            }
+            SeverityLevel severity = statusMessage.equals("Critical") ? SeverityLevel.CRITICAL : SeverityLevel.WARNING;
+            AlertManager.createAlert(this.getUniqueCode(), this.getZoneId(), value, severity,
+                                     "DISSOLVED OXYGEN ALERT (" + uniqueCode + "): " + statusMessage + " reading: " + value + " " + UnitOfMeasurement);
+            return statusMessage + " - Alert created.";
         } else {
-            System.out.println("Dissolved Oxygen (" + uniqueCode + "): " + value + " is normal.");
+            return "Normal reading: " + value + " " + UnitOfMeasurement;
         }
     }
 }
