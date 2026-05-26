@@ -1,0 +1,1 @@
+public enum HealthStatus { HEALTHY, SICK, QUARANTINED }
