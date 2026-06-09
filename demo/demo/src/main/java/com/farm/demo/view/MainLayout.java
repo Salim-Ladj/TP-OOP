@@ -15,7 +15,7 @@ public class MainLayout extends HBox {
     private final StackPane contentHolder = new StackPane();
 
     // Keep references so we can highlight the active button
-    private Button btnZones, btnLivestock, btnProduction, btnSensors, btnAlerts;
+    private Button btnZones, btnLivestock, btnProduction, btnSensors, btnAlerts, btnCrops;
 
     // Cached views (lazy-init)
     private Node zonesView;
@@ -23,6 +23,7 @@ public class MainLayout extends HBox {
     private Node productionView;
     private Node sensorsView;
     private Node alertsView;
+    private Node cropsView;
 
     public MainLayout() {
         getStyleClass().add("root");
@@ -61,12 +62,14 @@ public class MainLayout extends HBox {
         // Nav buttons
         btnZones      = navButton("    Zones Overview");
         btnLivestock  = navButton("    Livestock Registry");
+        btnCrops      = navButton("    Crops");
         btnProduction = navButton("    Production Records");
         btnSensors    = navButton("    Sensors");
         btnAlerts     = navButton("    Alerts");
 
         btnZones.setOnAction(e -> showZones());
         btnLivestock.setOnAction(e -> showLivestock());
+        btnCrops.setOnAction(e -> showCrops());
         btnProduction.setOnAction(e -> showProduction());
         btnSensors.setOnAction(e -> showSensors());
         btnAlerts.setOnAction(e -> showAlerts());
@@ -80,7 +83,7 @@ public class MainLayout extends HBox {
 
         sidebar.getChildren().addAll(
                 header, topSpacer,
-                btnZones, btnLivestock, btnProduction, btnSensors, btnAlerts,
+                btnZones, btnLivestock, btnCrops, btnProduction, btnSensors, btnAlerts,
                 spacer, footer
         );
         return sidebar;
@@ -118,7 +121,7 @@ public class MainLayout extends HBox {
     // ── Navigation ────────────────────────────────────────────────────────────
 
     private void setActive(Button active) {
-        for (Button b : new Button[]{btnZones, btnLivestock, btnProduction, btnSensors, btnAlerts}) {
+        for (Button b : new Button[]{btnZones, btnLivestock, btnCrops, btnProduction, btnSensors, btnAlerts}) {
             b.getStyleClass().remove("active");
         }
         active.getStyleClass().add("active");
@@ -134,6 +137,21 @@ public class MainLayout extends HBox {
             javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText("Failed to launch Smart Farm (Swing)");
+            alert.setContentText(e.getClass().getSimpleName() + ": " + e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
+    private void showCrops() {
+        try {
+            setActive(btnCrops);
+            if (cropsView == null) cropsView = new CropsView();
+            setContent(cropsView);
+        } catch (Exception e) {
+            e.printStackTrace();
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Failed to load Crops");
             alert.setContentText(e.getClass().getSimpleName() + ": " + e.getMessage());
             alert.showAndWait();
         }

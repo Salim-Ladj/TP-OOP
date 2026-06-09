@@ -14,6 +14,7 @@ public class Animal {
     private double weight;
     private HealthStatus health;
     private Map<HealthStatus, List<String>> healthHistory;
+    private String zoneId;
 
     // Constructor (original detailed)
     public Animal(AnimalType type, String uniqueNumber, String species, int age, double weight, HealthStatus health) {
@@ -122,5 +123,11 @@ public class Animal {
     public void setFeedConversionRatio(double v) { this.feedConversionRatio = v; }
     public java.time.LocalDate getNextVaccineDate() { return nextVaccineDate; }
     public void setNextVaccineDate(java.time.LocalDate d) { this.nextVaccineDate = d; }
+    public java.util.Map<HealthStatus, java.util.List<String>> getHealthHistory() { return healthHistory; }
+
+    public void setZoneId(String zoneId) {
+        this.zoneId = zoneId;
+    }
+    public String getZoneId() {return zoneId;}
 
 }

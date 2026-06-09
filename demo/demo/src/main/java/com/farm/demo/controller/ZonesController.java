@@ -1,21 +1,22 @@
 package com.farm.demo.controller;
 
 import com.farm.demo.model.*;
+import com.farm.demo.storage.StorageManager;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Controller for the Zones Overview screen.
  * Bridges the view with your existing model classes.
- * Swap the sample data in loadSampleData() for real persistence later.
+ * Integrates with StorageManager for file-based persistence.
  */
 public class ZonesController {
 
-    // In-memory store (replace with DB/file persistence if needed)
+    // In-memory store (loaded from/saved to file storage)
     private final List<Zone> zones = new ArrayList<>();
 
     public ZonesController() {
-        loadSampleData();
+        loadData();
     }
 
     // ── Queries ───────────────────────────────────────────────────────────────
@@ -49,6 +50,7 @@ public class ZonesController {
         z.setLocation(location);
         z.setStatus(status);
         zones.add(z);
+        saveData();
         return z;
     }
 
@@ -58,10 +60,12 @@ public class ZonesController {
         z.setCode(code);
         z.setLocation(location);
         z.setStatus(status);
+        saveData();
     }
 
     public void deleteZone(Zone z) {
         zones.remove(z);
+        saveData();
     }
 
     /** Toggles between ACTIVE and SUSPENDED (cascades to sensors). */
@@ -71,6 +75,58 @@ public class ZonesController {
         } else {
             z.reactivate();
         }
+        saveData();
+    }
+
+    // ── Zone assignment helpers ─────────────────────────────────────────────────
+
+    /** Assigns an Animal to a zone (returns true on success). */
+    public boolean assignAnimalToZone(Zone z, Animal a) {
+        if (z == null || a == null) return false;
+        try {
+            z.addEntity(a);
+            saveData();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** Assigns a Crop to a zone (returns true on success). */
+    public boolean assignCropToZone(Zone z, Crop c) {
+        if (z == null || c == null) return false;
+        try {
+            z.addEntity(c);
+            saveData();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** Returns the number of hosted entities for a zone (crops or animals). */
+    public int getHostedEntityCount(Zone z) {
+        if (z == null) return 0;
+        if (z instanceof CropZone) return ((CropZone) z).getCrops().size();
+        if (z instanceof LivestockZone) return ((LivestockZone) z).getAnimals().size();
+        return 0;
+    }
+
+    // ── Storage ───────────────────────────────────────────────────────────────
+
+    private void loadData() {
+        zones.clear();
+        List<Zone> loaded = StorageManager.loadZones();
+        if (loaded.isEmpty()) {
+            loadSampleData();
+            saveData();
+        } else {
+            zones.addAll(loaded);
+        }
+    }
+
+    public void saveData() {
+        StorageManager.saveZones(zones);
     }
 
     // ── Sample data ───────────────────────────────────────────────────────────
@@ -88,11 +144,9 @@ public class ZonesController {
         z2.addSensor(new DissolvedOxygenSensor("S-003"));
 
         LivestockZone z3 = new LivestockZone("ZN-221", "Hillside Pasture");
-        // Create as ACTIVE so we can add sensors, then suspend to reflect the intended sample state.
         z3.setStatus(ZoneStatus.ACTIVE);
         z3.setLocation("Sector C3");
         z3.addSensor(new BiometricSensor("S-004"));
-        // Suspend after adding sensors to avoid IllegalStateException from addSensor
         z3.suspend();
 
         CropZone z4 = new CropZone("ZN-108", "South Greenhouse");

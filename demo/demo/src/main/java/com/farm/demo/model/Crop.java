@@ -71,4 +71,26 @@ public class Crop {
     public GrowthStage getCurrentStage() {
         return currentStage;
     }
+    public LocalDate getPlantingDate() {
+        return plantingDate;
+    }
+    public LocalDate getExpectedHarvestDate() {
+        return expectedHarvestDate;
+    }
+    public double getMinPH() {
+        return minPH;
+    }
+    public double getMaxPH() {
+        return maxPH;
+    }
+    public double getMinMoisture() {
+        return minMoisture;
+    }
+    public double getMaxMoisture() {
+        return maxMoisture;
+    }
+    public String getId() {
+        return species + "_" + plantingDate;
+    }
+    public void setCurrentStage(GrowthStage stage){this.currentStage=stage;}
 }

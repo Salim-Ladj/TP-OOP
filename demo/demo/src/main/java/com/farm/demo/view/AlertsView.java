@@ -176,4 +176,3 @@ public class AlertsView extends VBox {
 
 
 
-

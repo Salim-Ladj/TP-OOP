@@ -1,5 +1,5 @@
 package com.farm.demo.model;
 
 public enum CropType {
-    CEREALS, VEGETABLES, FRUITS
+    CEREALS, CEREAL, VEGETABLES, VEGETABLE, FRUITS, FRUIT
 }

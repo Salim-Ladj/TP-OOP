@@ -164,4 +164,3 @@ public class SensorsView extends VBox {
 
 
 
-

@@ -1,0 +1,5 @@
+ZN-102|North Field Corn|Sector A1|ACTIVE|CROP
+ZN-045|East Basin Aquaculture|Sector B2|ACTIVE|AQUACULTURE
+ZN-221|Hillside Pasture|Sector C3|SUSPENDED|LIVESTOCK
+ZN-108|South Greenhouse|Sector D1|ACTIVE|CROP
+nz-123|test zone|zer|ACTIVE|CROP

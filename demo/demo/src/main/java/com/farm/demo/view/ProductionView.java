@@ -7,7 +7,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
@@ -91,10 +90,9 @@ public class ProductionView extends VBox {
         VBox.setVgrow(row, Priority.ALWAYS);
 
         VBox tableCard = buildTableCard();
-        VBox chartCard = buildChartCard();
 
         HBox.setHgrow(tableCard, Priority.ALWAYS);
-        row.getChildren().addAll(tableCard, chartCard);
+        row.getChildren().addAll(tableCard);
         return row;
     }
 
@@ -149,66 +147,6 @@ public class ProductionView extends VBox {
 
         table.getColumns().addAll(colZone, colType, colValue, colDate, colDel);
         box.getChildren().addAll(title, table);
-        return box;
-    }
-
-    private VBox buildChartCard() {
-        VBox box = new VBox(10);
-        box.getStyleClass().add("card");
-        box.setMinWidth(280);
-        box.setMaxWidth(320);
-
-        Label title = new Label("📊  Yield by Zone");
-        title.getStyleClass().add("section-title");
-
-        // Bar chart
-        CategoryAxis xAxis = new CategoryAxis();
-        NumberAxis   yAxis = new NumberAxis();
-        xAxis.setLabel("Zone");
-        yAxis.setLabel("Yield");
-
-        BarChart<String, Number> chart = new BarChart<>(xAxis, yAxis);
-        chart.setLegendVisible(false);
-        chart.setAnimated(false);
-        chart.setStyle("-fx-background-color:transparent;");
-        VBox.setVgrow(chart, Priority.ALWAYS);
-
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        // Aggregate by zone
-        data.stream()
-                .collect(java.util.stream.Collectors.groupingBy(
-                        ProductionRecord::getZoneCode,
-                        java.util.stream.Collectors.summingDouble(ProductionRecord::getValue)
-                ))
-                .forEach((zone, total) ->
-                        series.getData().add(new XYChart.Data<>(zone, total))
-                );
-        chart.getData().add(series);
-        chart.setStyle("-fx-background-color:#0f0f1a;-fx-text-fill:#ccccee;");
-
-        // Type breakdown list
-        Label breakTitle = new Label("By Production Type");
-        breakTitle.getStyleClass().add("card-title");
-
-        VBox breakdown = new VBox(6);
-        data.stream()
-                .collect(java.util.stream.Collectors.groupingBy(
-                        r -> r.getProductionType().name(),
-                        java.util.stream.Collectors.summingDouble(ProductionRecord::getValue)
-                ))
-                .forEach((type, total) -> {
-                    HBox row = new HBox(8);
-                    row.setAlignment(Pos.CENTER_LEFT);
-                    Label typeLbl = new Label(type);
-                    typeLbl.getStyleClass().add("detail-key");
-                    Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
-                    Label valLbl = new Label(String.format("%.0f", total));
-                    valLbl.getStyleClass().add("detail-value");
-                    row.getChildren().addAll(typeLbl, sp, valLbl);
-                    breakdown.getChildren().add(row);
-                });
-
-        box.getChildren().addAll(title, chart, breakTitle, breakdown);
         return box;
     }
 

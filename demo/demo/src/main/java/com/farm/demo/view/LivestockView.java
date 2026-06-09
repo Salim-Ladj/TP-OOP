@@ -11,6 +11,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.*;
 
 /**
@@ -34,6 +35,10 @@ public class LivestockView extends HBox {
     private Label lblFeedConv, lblNextVaccine, lblHealthStatus;
     private VBox healthLogBox;
     private Animal selectedAnimal;
+
+    // Zone filter state
+    private String activeZoneFilter = null;   // null = "All Zones"
+    private TextField searchField;            // keep ref so both filters compose
 
     public LivestockView() {
         getStyleClass().add("content-area");
@@ -79,25 +84,77 @@ public class LivestockView extends HBox {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        TextField search = new TextField();
-        search.setPromptText("  Search by ID, Breed, or Tag...");
-        search.getStyleClass().add("search-field");
-        search.setPrefWidth(240);
-        search.textProperty().addListener((o, ov, nv) -> {
-            String q = nv == null ? "" : nv.toLowerCase();
-            filtered.setPredicate(a ->
-                    q.isEmpty() ||
-                            a.getUniqueNumber().toLowerCase().contains(q) ||
-                            a.getSpecies().toLowerCase().contains(q)
-            );
+        // ── Zone filter ───────────────────────────────────────────────────────
+        Label zoneLbl = new Label("🗺 Zone:");
+        zoneLbl.setStyle("-fx-text-fill:#9999bb;-fx-font-size:12px;");
+
+        // Build zone ID list: "All Zones" + every zone that has animals
+        javafx.collections.ObservableList<String> zoneOptions =
+                FXCollections.observableArrayList();
+        zoneOptions.add("All Zones");
+        controller.getZoneIds().forEach(zoneOptions::add);
+
+        ComboBox<String> cmbZone = new ComboBox<>(zoneOptions);
+        cmbZone.setValue("All Zones");
+        cmbZone.getStyleClass().add("form-combo");
+        cmbZone.setPrefWidth(160);
+        cmbZone.setStyle(
+                "-fx-background-color:#1e1e3a;" +
+                        "-fx-border-color:#2a2a4a;" +
+                        "-fx-border-radius:8;" +
+                        "-fx-background-radius:8;" +
+                        "-fx-text-fill:#ccccee;"
+        );
+        cmbZone.valueProperty().addListener((o, ov, nv) -> {
+            activeZoneFilter = (nv == null || nv.equals("All Zones")) ? null : nv;
+            applyFilters();
+        });
+
+        // ── Search ────────────────────────────────────────────────────────────
+        searchField = new TextField();
+        searchField.setPromptText("  Search by ID, Breed, or Tag...");
+        searchField.getStyleClass().add("search-field");
+        searchField.setPrefWidth(220);
+        searchField.textProperty().addListener((o, ov, nv) -> applyFilters());
+
+        // ── Clear filter button ───────────────────────────────────────────────
+        Button btnClear = new Button("✕");
+        btnClear.getStyleClass().add("btn-secondary");
+        btnClear.setTooltip(new Tooltip("Clear zone filter"));
+        btnClear.setPadding(new Insets(6, 10, 6, 10));
+        btnClear.setOnAction(e -> {
+            cmbZone.setValue("All Zones");
+            searchField.clear();
         });
 
         Button btnNew = new Button("＋  New Entry");
         btnNew.getStyleClass().add("btn-primary");
         btnNew.setOnAction(e -> showAddDialog());
 
-        bar.getChildren().addAll(titles, spacer, search, btnNew);
+        bar.getChildren().addAll(titles, spacer, zoneLbl, cmbZone, btnClear, searchField, btnNew);
         return bar;
+    }
+
+    /**
+     * Combines the zone filter and the search text filter.
+     * Called whenever either filter changes.
+     */
+    private void applyFilters() {
+        String q = (searchField == null || searchField.getText() == null)
+                ? "" : searchField.getText().toLowerCase();
+
+        filtered.setPredicate(a -> {
+            // 1. Zone filter
+            boolean zoneOk = (activeZoneFilter == null)
+                    || activeZoneFilter.equals(controller.getZoneIdForAnimal(a));
+
+            // 2. Search filter
+            boolean searchOk = q.isEmpty()
+                    || a.getUniqueNumber().toLowerCase().contains(q)
+                    || a.getSpecies().toLowerCase().contains(q);
+
+            return zoneOk && searchOk;
+        });
     }
 
     private HBox buildStatsRow() {
@@ -296,10 +353,112 @@ public class LivestockView extends HBox {
             }
         }
 
-        Label historyNote = new Label("Detailed health event entries are not exposed by the current Animal model.");
-        historyNote.getStyleClass().add("card-label");
-        historyNote.setWrapText(true);
-        healthLogBox.getChildren().add(historyNote);
+        // Build health log with events from healthHistory
+        buildHealthLog(a);
+    }
+
+    private void buildHealthLog(Animal a) {
+        healthLogBox.getChildren().clear();
+
+        // Add button to log new event
+        HBox logBtnRow = new HBox(8);
+        logBtnRow.setAlignment(Pos.CENTER_LEFT);
+        Button btnLogEvent = new Button("+ Log Health Event");
+        btnLogEvent.getStyleClass().add("btn-primary");
+        btnLogEvent.setStyle("-fx-font-size: 11;");
+        btnLogEvent.setOnAction(e -> showLogEventDialog(a));
+        logBtnRow.getChildren().add(btnLogEvent);
+        healthLogBox.getChildren().add(logBtnRow);
+
+        // Display health events from history
+        java.util.Map<HealthStatus, java.util.List<String>> history = a.getHealthHistory();
+        if (history == null || history.isEmpty()) {
+            Label empty = new Label("No health events logged yet.");
+            empty.getStyleClass().add("card-label");
+            empty.setStyle("-fx-text-fill: #888;");
+            healthLogBox.getChildren().add(empty);
+            return;
+        }
+
+        boolean hasEvents = false;
+        for (java.util.Map.Entry<HealthStatus, java.util.List<String>> entry : history.entrySet()) {
+            java.util.List<String> events = entry.getValue();
+            if (events != null && !events.isEmpty()) {
+                hasEvents = true;
+                for (String event : events) {
+                    VBox eventCard = new VBox(4);
+                    eventCard.setStyle("-fx-border-color: #444; -fx-border-radius: 4; -fx-padding: 8;");
+                    Label eventLbl = new Label(event);
+                    eventLbl.setWrapText(true);
+                    eventLbl.setStyle("-fx-font-size: 11; -fx-text-fill: #ddd;");
+                    eventCard.getChildren().add(eventLbl);
+                    healthLogBox.getChildren().add(eventCard);
+                }
+            }
+        }
+
+        if (!hasEvents) {
+            Label empty = new Label("No health events logged yet.");
+            empty.getStyleClass().add("card-label");
+            empty.setStyle("-fx-text-fill: #888;");
+            healthLogBox.getChildren().add(empty);
+        }
+    }
+
+    private void showLogEventDialog(Animal a) {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Log Health Event");
+        dialog.setHeaderText("Record a health event for " + a.getUniqueNumber());
+
+        ButtonType logBtn = new ButtonType("Log Event", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(logBtn, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(16));
+
+        TextArea taDescription = new TextArea();
+        taDescription.setPromptText("e.g. Vaccination, Illness, Injury, Checkup");
+        taDescription.setPrefRowCount(4);
+        taDescription.setWrapText(true);
+
+        TextField fWeight = new TextField();
+        fWeight.setPromptText("Current weight in kg");
+        fWeight.setText(String.valueOf((int)a.getWeight()));
+
+        TextField fAge = new TextField();
+        fAge.setPromptText("Current age in years");
+        fAge.setText(String.valueOf(a.getAge()));
+
+        grid.addRow(0, new Label("Event Description:"), taDescription);
+        grid.addRow(1, new Label("Current Weight (kg):"), fWeight);
+        grid.addRow(2, new Label("Current Age (years):"), fAge);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.setResultConverter(btn -> {
+            if (btn == logBtn) {
+                return taDescription.getText();
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(description -> {
+            if (!description.trim().isEmpty()) {
+                try {
+                    double weight = Double.parseDouble(fWeight.getText());
+                    int age = Integer.parseInt(fAge.getText());
+                    a.logHealthEvent(description, weight, age);
+                    controller.saveData();
+                    buildHealthLog(a);
+                } catch (NumberFormatException ex) {
+                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                    alert.setTitle("Invalid Input");
+                    alert.setHeaderText("Please enter valid weight and age values");
+                    alert.showAndWait();
+                }
+            }
+        });
     }
 
     // ── Dialogs ───────────────────────────────────────────────────────────────
@@ -353,11 +512,68 @@ public class LivestockView extends HBox {
 
     private void showEditDialog(Animal a) {
         if (a == null) return;
-        javafx.scene.control.Alert info = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION,
-                "Edit dialog for " + a.getUniqueNumber() + " — wire to your update logic.",
-                ButtonType.OK);
-        info.setHeaderText("Edit Animal");
-        info.showAndWait();
+        Dialog<Animal> dialog = new Dialog<>();
+        dialog.setTitle("Edit Animal");
+        dialog.setHeaderText("Edit animal record and log health events");
+
+        ButtonType saveType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10); grid.setVgap(10);
+        grid.setPadding(new Insets(16));
+
+        TextField fSpecies = new TextField(a.getSpecies());
+        TextField fWeight = new TextField(String.valueOf(a.getWeight()));
+        ComboBox<HealthStatus> cmbHealth = new ComboBox<>(FXCollections.observableArrayList(HealthStatus.values()));
+        cmbHealth.setValue(a.getHealth());
+
+        grid.addRow(0, new Label("Species:"), fSpecies);
+        grid.addRow(1, new Label("Weight (kg):"), fWeight);
+        grid.addRow(2, new Label("Health Status:"), cmbHealth);
+
+        // Log health event area
+        TextArea fEvent = new TextArea(); fEvent.setPromptText("Event description (vaccine, illness, notes)");
+        fEvent.setPrefRowCount(3);
+        TextField fEventWeight = new TextField(); fEventWeight.setPromptText("Current weight (kg)");
+        TextField fEventAge = new TextField(); fEventAge.setPromptText("Current age (yrs)");
+
+        grid.addRow(3, new Label("Log Event:"), fEvent);
+        grid.addRow(4, new Label("Event Weight:"), fEventWeight);
+        grid.addRow(5, new Label("Event Age:"), fEventAge);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(btn -> {
+            if (btn == saveType) {
+                try {
+                    double newWeight = Double.parseDouble(fWeight.getText());
+                    a.setSpecies(fSpecies.getText());
+                    a.setWeight(newWeight);
+                    a.setHealthStatus(cmbHealth.getValue());
+
+                    // If an event description was provided, log it
+                    String desc = fEvent.getText().trim();
+                    if (!desc.isEmpty()) {
+                        double ew = fEventWeight.getText().isEmpty() ? newWeight : Double.parseDouble(fEventWeight.getText());
+                        int ea = fEventAge.getText().isEmpty() ? a.getAge() : Integer.parseInt(fEventAge.getText());
+                        a.logHealthEvent(desc, ew, ea);
+                    }
+                    return a;
+                } catch (NumberFormatException ex) {
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(updated -> {
+            if (updated != null) {
+                controller.saveData();
+                // refresh UI
+                showDetail(updated);
+            }
+        });
     }
 
     private void showReport(Animal a) {
