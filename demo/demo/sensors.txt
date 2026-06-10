@@ -1,0 +1,10 @@
+CZ-01|BiometricSensor|FIELD-TEMP|ACTIVE|5.0|40.0|Celsius
+CZ-01|BiometricSensor|FIELD-MOIST|ACTIVE|30.0|70.0|%
+CZ-02|BiometricSensor|GH-TEMP|ACTIVE|18.0|28.0|Celsius
+CZ-02|BiometricSensor|GH-HUMID|ACTIVE|40.0|80.0|%
+LZ-01|BiometricSensor|BARN-TEMP|ACTIVE|10.0|30.0|Celsius
+LZ-02|BiometricSensor|PASTURE-GPS|ACTIVE|0.0|100.0|Coord
+LZ-03|BiometricSensor|POULTRY-TEMP|ACTIVE|20.0|26.0|Celsius
+AQ-01|BiometricSensor|POND-OXY|ACTIVE|5.5|9.0|mg/L
+AQ-01|BiometricSensor|POND-PH|ACTIVE|6.5|8.5|pH
+AQ-02|BiometricSensor|TANK-SALINITY|ACTIVE|15.0|35.0|ppt

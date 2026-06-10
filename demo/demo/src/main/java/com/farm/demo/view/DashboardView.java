@@ -103,10 +103,10 @@ public class DashboardView extends VBox {
         lblOverview.setWrapText(true);
         lblOverview.setFont(Font.font("Monospaced", 14));
 
-        Button btnViewAll = new Button("Go to Alert Center");
-        btnViewAll.setStyle("-fx-background-color: #34495e; -fx-text-fill: white;");
+        //Button btnViewAll = new Button("Go to Alert Center");
+        //btnViewAll.setStyle("-fx-background-color: #34495e; -fx-text-fill: white;");
 
-        container.getChildren().addAll(lbl, new Separator(), lblOverview, new Spacer(), btnViewAll);
+        container.getChildren().addAll(lbl, new Separator(), lblOverview, new Spacer());
         return container;
     }
 

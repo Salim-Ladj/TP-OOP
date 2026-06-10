@@ -1,3 +1,7 @@
-CropZone|CZ-01|North Field|ACTIVE
-LivestockZone|LZ-01|East Paddock|SUSPENDED
-CropZone|1|test crop|ACTIVE
+CropZone|CZ-01|North Wheat Field|ACTIVE
+CropZone|CZ-02|Organic Greenhouse|ACTIVE
+LivestockZone|LZ-01|Main Cattle Barn|ACTIVE
+LivestockZone|LZ-02|Highland Sheep Pasture|ACTIVE
+LivestockZone|LZ-03|Poultry Layer House|ACTIVE
+AquacultureZone|AQ-01|Tilapia Breeding Pond|ACTIVE
+AquacultureZone|AQ-02|Shrimp Nursery Tank|ACTIVE

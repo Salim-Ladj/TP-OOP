@@ -1,0 +1,5 @@
+LZ-01|High-Protein Silage|25.0|2
+LZ-02|Natural Grass|0.0|0
+LZ-03|Layer Mash|0.15|3
+AQ-01|Floating Pellets|4.5|2
+AQ-02|Shrimp Starter Crumble|0.5|5
