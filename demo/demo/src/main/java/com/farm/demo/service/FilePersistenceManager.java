@@ -1,9 +1,8 @@
-
 package com.farm.demo.service;
 
 import com.farm.demo.model.*;
-        import java.io.*;
-        import java.time.LocalDate;
+import java.io.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +16,10 @@ public class FilePersistenceManager {
     private static final String PRODUCTION_FILE = "production.txt";
     private static final String FEEDING_FILE = "feeding.txt";
 
+    // NEW HISTORY FILES
+    private static final String HEALTH_HIST_FILE = "health_history.txt";
+    private static final String SENSOR_READ_FILE = "sensor_readings.txt";
+
     public static void saveData(Farm farm) {
         saveZones(farm.getZones());
         saveAnimals(farm.getZones());
@@ -24,17 +27,106 @@ public class FilePersistenceManager {
         saveSensors(farm.getZones());
         saveProduction(farm.getZones());
         saveFeeding(farm.getZones());
+
+        // Save the complex histories to their own files
+        saveHealthHistory(farm);
+        saveSensorReadings(farm);
     }
 
     public static void loadData(Farm farm) {
-        // IMPORTANT: Load zones first so other items can find their "home"
         loadZones(farm);
         loadAnimals(farm);
         loadCrops(farm);
         loadSensors(farm);
         loadProduction(farm);
         loadFeeding(farm);
+
+        // Load the histories and attach them to the objects
+        loadHealthHistory(farm);
+        loadSensorReadings(farm);
     }
+
+    // --- HEALTH HISTORY PERSISTENCE ---
+    private static void saveHealthHistory(Farm farm) {
+        try (PrintWriter out = new PrintWriter(new FileWriter(HEALTH_HIST_FILE))) {
+            for (Zone z : farm.getZones()) {
+                List<Animal> animals = new ArrayList<>();
+                if (z instanceof LivestockZone lz) animals = lz.getAnimals();
+                else if (z instanceof AquacultureZone az) animals = az.getAnimals();
+
+                for (Animal a : animals) {
+                    a.getHealthHistory().forEach((status, logs) -> {
+                        for (String logEntry : logs) {
+                            // Format: ANIMAL_ID|STATUS|LOG_TEXT
+                            out.println(a.getUniqueNumber() + "|" + status.name() + "|" + logEntry);
+                        }
+                    });
+                }
+            }
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
+    private static void loadHealthHistory(Farm farm) {
+        File file = new File(HEALTH_HIST_FILE);
+        if (!file.exists()) return;
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] p = line.split("\\|");
+                String animalId = p[0];
+                HealthStatus status = HealthStatus.valueOf(p[1]);
+                String logText = p[2];
+
+                // Find the animal in any zone and add the log
+                for (Zone z : farm.getZones()) {
+                    List<Animal> list = (z instanceof LivestockZone lz) ? lz.getAnimals() :
+                            (z instanceof AquacultureZone az) ? az.getAnimals() : new ArrayList<>();
+                    for (Animal a : list) {
+                        if (a.getUniqueNumber().equals(animalId)) {
+                            a.getHealthHistory().get(status).add(logText);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    // --- SENSOR READINGS PERSISTENCE ---
+    private static void saveSensorReadings(Farm farm) {
+        try (PrintWriter out = new PrintWriter(new FileWriter(SENSOR_READ_FILE))) {
+            for (Zone z : farm.getZones()) {
+                for (Sensor s : z.getSensors()) {
+                    for (SensorReading r : s.getAllReadings()) {
+                        // Format: SENSOR_ID|VALUE|TIMESTAMP
+                        out.println(s.getUniqueCode() + "|" + r.getValue() + "|" + r.getTimestamp());
+                    }
+                }
+            }
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
+    private static void loadSensorReadings(Farm farm) {
+        File file = new File(SENSOR_READ_FILE);
+        if (!file.exists()) return;
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] p = line.split("\\|");
+                String sensorId = p[0];
+                double val = Double.parseDouble(p[1]);
+                LocalDateTime time = LocalDateTime.parse(p[2]);
+
+                for (Zone z : farm.getZones()) {
+                    z.getSensorByUniqueCode(sensorId).ifPresent(s -> {
+                        // We add directly to the history list of the sensor
+                        s.getAllReadings().add(new SensorReading(val, time));
+                    });
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    // ... (Keep your existing simple load/save methods for Zones, Animals, Crops, Sensors) ...
 
     // --- SENSORS ---
     private static void saveSensors(List<Zone> zones) {

@@ -1,0 +1,2 @@
+COW-03|HEALTHY|Age: 0, Weight: 450.2, Event: good health
+COW-03|SICK|Age: 0, Weight: 430.2, Event: not good
