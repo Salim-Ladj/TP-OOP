@@ -40,6 +40,8 @@ public class MainLayout extends BorderPane {
         addNavButton(sidebar, "Zones", new ZoneManagementView());
         addNavButton(sidebar, "Crops", new CropManagementView());
         addNavButton(sidebar, "Animals", new AnimalManagementView());
+        addNavButton(sidebar, "Production", new ProductionManagementView());
+        addNavButton(sidebar, "Feeding", new FeedingManagementView());
         addNavButton(sidebar, "Sensors", new SensorMonitorView()); // Liaison dynamique de supervision
         addNavButton(sidebar, "Alerts", new AlertCenterView());   // Liaison de gestion des alertes
 

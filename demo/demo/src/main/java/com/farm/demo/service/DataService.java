@@ -20,8 +20,18 @@ public class DataService {
 
     private DataService() {
         this.farm = new Farm("F-01", "Green Valley");
-        seedInitialData();
+        // 1. Try to load from files
+        FilePersistenceManager.loadData(farm);
+
+        // 2. If files were empty, seed initial data
+        if (farm.getZones().isEmpty()) {
+            seedInitialData();
+        }
         refreshAll();
+    }
+
+    public void saveToDisk() {
+        FilePersistenceManager.saveData(farm);
     }
 
     public static DataService getInstance() {
@@ -84,6 +94,24 @@ public class DataService {
             }
         }
         return allCrops;
+    }
+
+    public ObservableList<ProductionRecord> getProductionRecords() {
+        ObservableList<ProductionRecord> records = FXCollections.observableArrayList();
+        for (Zone zone : farm.getZones()) {
+            if (zone.getProductionRecord() != null) {
+                records.add(zone.getProductionRecord());
+            }
+        }
+        return records;
+    }
+
+    public ObservableList<Zone> getZonesWithFeeding() {
+        return farm.getZones().stream()
+                .filter(z -> z instanceof LivestockZone || z instanceof AquacultureZone)
+                .collect(javafx.collections.FXCollections::observableArrayList,
+                        java.util.List::add,
+                        java.util.List::addAll);
     }
 
     // Stats for Dashboard

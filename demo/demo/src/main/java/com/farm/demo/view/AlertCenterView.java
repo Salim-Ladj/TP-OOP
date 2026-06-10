@@ -1,6 +1,8 @@
 package com.farm.demo.view;
 
-import com.farm.demo.model.*;
+import com.farm.demo.model.SeverityLevel; // Import specific models
+import com.farm.demo.model.Zone;
+// We do NOT import com.farm.demo.model.Alert to avoid conflict
 import com.farm.demo.service.DataService;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
@@ -9,14 +11,14 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import java.time.LocalDateTime;
 
 public class AlertCenterView extends VBox {
 
     private final DataService dataService = DataService.getInstance();
 
-    private TableView<Alert> alertsTable;
-    private FilteredList<Alert> filteredAlerts;
+    // Use fully qualified names for your model Alert
+    private TableView<com.farm.demo.model.Alert> alertsTable;
+    private FilteredList<com.farm.demo.model.Alert> filteredAlerts;
 
     private ComboBox<String> zoneFilter;
     private ComboBox<SeverityLevel> severityFilter;
@@ -28,10 +30,8 @@ public class AlertCenterView extends VBox {
         Label title = new Label("Incident & Alert Control Center");
         title.setFont(Font.font("System", FontWeight.BOLD, 20));
 
-        // Barre de filtres
         HBox filterBar = createFilterBar();
 
-        // Corps
         HBox body = new HBox(15);
         VBox.setVgrow(body, Priority.ALWAYS);
 
@@ -41,7 +41,6 @@ public class AlertCenterView extends VBox {
         VBox actionPane = createActionPane();
 
         body.getChildren().addAll(alertsTable, actionPane);
-
         getChildren().addAll(title, filterBar, body);
     }
 
@@ -94,24 +93,24 @@ public class AlertCenterView extends VBox {
         alertsTable.setItems(filteredAlerts);
         alertsTable.setPlaceholder(new Label("No active alerts. Operational status normal."));
 
-        TableColumn<Alert, Integer> idCol = new TableColumn<>("ID");
+        // Use fully qualified model path for TableColumn types
+        TableColumn<com.farm.demo.model.Alert, Integer> idCol = new TableColumn<>("ID");
         idCol.setCellValueFactory(new PropertyValueFactory<>("alertId"));
         idCol.setPrefWidth(50);
 
-        TableColumn<Alert, String> zoneCol = new TableColumn<>("Zone");
+        TableColumn<com.farm.demo.model.Alert, String> zoneCol = new TableColumn<>("Zone");
         zoneCol.setCellValueFactory(new PropertyValueFactory<>("zoneId"));
 
-        TableColumn<Alert, String> sensorCol = new TableColumn<>("Sensor");
+        TableColumn<com.farm.demo.model.Alert, String> sensorCol = new TableColumn<>("Sensor");
         sensorCol.setCellValueFactory(new PropertyValueFactory<>("sensorUniqueCode"));
 
-        TableColumn<Alert, Double> valCol = new TableColumn<>("Value");
+        TableColumn<com.farm.demo.model.Alert, Double> valCol = new TableColumn<>("Value");
         valCol.setCellValueFactory(new PropertyValueFactory<>("readingValue"));
 
-        TableColumn<Alert, SeverityLevel> sevCol = new TableColumn<>("Severity");
+        TableColumn<com.farm.demo.model.Alert, SeverityLevel> sevCol = new TableColumn<>("Severity");
         sevCol.setCellValueFactory(new PropertyValueFactory<>("severityLevel"));
 
-        // Coloration en fonction du niveau d'alerte (Slide 50)
-        sevCol.setCellFactory(col -> new TableCell<>() {
+        sevCol.setCellFactory(col -> new TableCell<com.farm.demo.model.Alert, SeverityLevel>() {
             @Override
             protected void updateItem(SeverityLevel item, boolean empty) {
                 super.updateItem(item, empty);
@@ -130,7 +129,7 @@ public class AlertCenterView extends VBox {
             }
         });
 
-        TableColumn<Alert, String> msgCol = new TableColumn<>("Description Message");
+        TableColumn<com.farm.demo.model.Alert, String> msgCol = new TableColumn<>("Description Message");
         msgCol.setCellValueFactory(new PropertyValueFactory<>("message"));
         msgCol.setPrefWidth(220);
 
@@ -151,7 +150,7 @@ public class AlertCenterView extends VBox {
         btnAcknowledge.setMaxWidth(Double.MAX_VALUE);
         btnAcknowledge.setStyle("-fx-background-color: #5cb85c; -fx-text-fill: white;");
         btnAcknowledge.setOnAction(e -> {
-            Alert selected = alertsTable.getSelectionModel().getSelectedItem();
+            com.farm.demo.model.Alert selected = alertsTable.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 String outcome = dataService.getFarm().acknowledgeAlert(selected.getAlertId());
                 showInfo("Alert Acknowledged", outcome);
@@ -165,7 +164,7 @@ public class AlertCenterView extends VBox {
         btnDismiss.setMaxWidth(Double.MAX_VALUE);
         btnDismiss.setStyle("-fx-background-color: #d9534f; -fx-text-fill: white;");
         btnDismiss.setOnAction(e -> {
-            Alert selected = alertsTable.getSelectionModel().getSelectedItem();
+            com.farm.demo.model.Alert selected = alertsTable.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 String outcome = dataService.getFarm().dismissAlert(selected.getAlertId());
                 showInfo("Alert Dismissed", outcome);

@@ -1,0 +1,3 @@
+CropZone|CZ-01|North Field|ACTIVE
+LivestockZone|LZ-01|East Paddock|SUSPENDED
+CropZone|1|test crop|ACTIVE
