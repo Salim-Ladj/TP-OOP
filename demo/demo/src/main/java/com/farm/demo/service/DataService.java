@@ -1,8 +1,7 @@
-
 package com.farm.demo.service;
 
 import com.farm.demo.model.*;
-        import javafx.collections.FXCollections;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class DataService {
@@ -13,6 +12,11 @@ public class DataService {
     private final ObservableList<Zone> zones = FXCollections.observableArrayList();
     private final ObservableList<Animal> animals = FXCollections.observableArrayList();
     private final ObservableList<Crop> crops = FXCollections.observableArrayList();
+
+    // --- AJOUT DE L'ESSENTIEL POUR LES ALERTS ET LES SENSORS ---
+    // Listes persistantes écoutées par l'interface des capteurs et des alertes
+    private final ObservableList<Alert> activeAlerts = FXCollections.observableArrayList();
+    private final ObservableList<Sensor> sensors = FXCollections.observableArrayList();
 
     private DataService() {
         this.farm = new Farm("F-01", "Green Valley");
@@ -48,6 +52,16 @@ public class DataService {
                 crops.addAll(cz.getCrops());
             }
         }
+
+        // --- AJOUT DE LA SYNCHRONISATION DES SENSORS ET DES ALERTS ---
+        // 1. Synchronisation de la liste des capteurs
+        sensors.clear();
+        for (Zone z : farm.getZones()) {
+            sensors.addAll(z.getSensors());
+        }
+
+        // 2. Synchronisation de la liste des alertes actives triées par gravité
+        activeAlerts.setAll(AlertManager.getActiveAlertsSortedBySeverity());
     }
 
     public ObservableList<Animal> getAllAnimals() {
@@ -93,4 +107,8 @@ public class DataService {
     public ObservableList<Animal> getAnimals() { return animals; }
     public ObservableList<Crop> getCrops() { return crops; } // Return the persistent list
     public Farm getFarm() { return farm; }
+
+    // --- ACCESSEURS POUR LES ALERTS ET LES SENSORS ---
+    public ObservableList<Alert> getActiveAlerts() { return activeAlerts; }
+    public ObservableList<Sensor> getSensors() { return sensors; }
 }
