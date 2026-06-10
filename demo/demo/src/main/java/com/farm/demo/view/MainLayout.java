@@ -2,238 +2,101 @@ package com.farm.demo.view;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
-/**
- * Root layout: fixed sidebar on the left, swappable content on the right.
- */
-public class MainLayout extends HBox {
+public class MainLayout extends BorderPane {
 
-    private final StackPane contentHolder = new StackPane();
-
-    // Keep references so we can highlight the active button
-    private Button btnZones, btnLivestock, btnProduction, btnSensors, btnAlerts, btnCrops;
-
-    // Cached views (lazy-init)
-    private Node zonesView;
-    private Node livestockView;
-    private Node productionView;
-    private Node sensorsView;
-    private Node alertsView;
-    private Node cropsView;
+    private StackPane contentArea;
 
     public MainLayout() {
-        getStyleClass().add("root");
-        setFillHeight(true);
+        // 1. Header
+        this.setTop(createHeader());
 
-        VBox sidebar = buildSidebar();
-        HBox.setHgrow(contentHolder, Priority.ALWAYS);
-        contentHolder.setAlignment(Pos.TOP_LEFT);
+        // 2. Sidebar Navigation
+        this.setLeft(createSidebar());
 
-        getChildren().addAll(sidebar, contentHolder);
+        // 3. Central Content Area
+        contentArea = new StackPane();
+        contentArea.setPadding(new Insets(20));
+        contentArea.setStyle("-fx-background-color: #ffffff;"); // Clean white background
 
-        // Show zones by default
-        showZones();
+        // Initial view
+        setView(new Label("Select a category to begin."));
+        setView(new DashboardView());
+        this.setCenter(contentArea);
     }
 
-    // ── Sidebar ───────────────────────────────────────────────────────────────
+    private VBox createSidebar() {
+        VBox sidebar = new VBox(5); // Small spacing between items
+        sidebar.setPadding(new Insets(10, 0, 10, 0)); // No side padding so buttons hit the edges
+        sidebar.setPrefWidth(220);
+        sidebar.setStyle("-fx-background-color: #34495e;");
 
-    private VBox buildSidebar() {
-        VBox sidebar = new VBox();
-        sidebar.getStyleClass().add("sidebar");
-        VBox.setVgrow(sidebar, Priority.ALWAYS);
+        // Define our navigation items
+        addNavButton(sidebar, "Dashboard", new DashboardView()); // We'll build this later
+        addNavButton(sidebar, "Zones", new ZoneManagementView());
+        addNavButton(sidebar, "Crops", new CropManagementView());
+        addNavButton(sidebar, "Animals", new AnimalManagementView());
+        addNavButton(sidebar, "Sensors", null);
+        addNavButton(sidebar, "Alerts", null);
 
-        // Header
-        VBox header = new VBox(2);
-        header.getStyleClass().add("sidebar-header");
-        Label appTitle = new Label(" SmartFarm Core");
-        appTitle.getStyleClass().add("sidebar-app-title");
-        Label appSub = new Label("Management Suite");
-        appSub.getStyleClass().add("sidebar-app-subtitle");
-        header.getChildren().addAll(appTitle, appSub);
 
-        // Spacer between header and nav
-        Region topSpacer = new Region();
-        topSpacer.setPrefHeight(8);
-
-        // Nav buttons
-        btnZones      = navButton("    Zones Overview");
-        btnLivestock  = navButton("    Livestock Registry");
-        btnCrops      = navButton("    Crops");
-        btnProduction = navButton("    Production Records");
-        btnSensors    = navButton("    Sensors");
-        btnAlerts     = navButton("    Alerts");
-
-        btnZones.setOnAction(e -> showZones());
-        btnLivestock.setOnAction(e -> showLivestock());
-        btnCrops.setOnAction(e -> showCrops());
-        btnProduction.setOnAction(e -> showProduction());
-        btnSensors.setOnAction(e -> showSensors());
-        btnAlerts.setOnAction(e -> showAlerts());
-
-        // Push footer to bottom
-        Region spacer = new Region();
-        VBox.setVgrow(spacer, Priority.ALWAYS);
-
-        // Footer (user info)
-        VBox footer = buildFooter();
-
-        sidebar.getChildren().addAll(
-                header, topSpacer,
-                btnZones, btnLivestock, btnCrops, btnProduction, btnSensors, btnAlerts,
-                spacer, footer
-        );
         return sidebar;
     }
 
-    private Button navButton(String text) {
+    /**
+     * Helper method to create a sidebar button that looks like a menu item
+     */
+    private void addNavButton(VBox sidebar, String text, Pane viewToOpen) {
         Button btn = new Button(text);
-        btn.getStyleClass().add("sidebar-nav-btn");
-        btn.setMaxWidth(Double.MAX_VALUE);
-        return btn;
+
+        // STYLING: Make it look like a menu item, not a standard button
+        btn.setMaxWidth(Double.MAX_VALUE); // Fill sidebar width
+        btn.setAlignment(Pos.CENTER_LEFT);
+        btn.setPadding(new Insets(12, 20, 12, 20));
+        btn.setFont(Font.font("System", FontWeight.NORMAL, 14));
+
+        // CSS Styling: Transparent background, white text
+        String normalStyle = "-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-background-radius: 0;";
+        String hoverStyle = "-fx-background-color: #2c3e50; -fx-text-fill: white; -fx-background-radius: 0; -fx-cursor: hand;";
+
+        btn.setStyle(normalStyle);
+
+        // Hover Effects
+        btn.setOnMouseEntered(e -> btn.setStyle(hoverStyle));
+        btn.setOnMouseExited(e -> btn.setStyle(normalStyle));
+
+        // CLICK ACTION
+        btn.setOnAction(e -> {
+            if (viewToOpen != null) {
+                setView(viewToOpen);
+            } else {
+                setView(new StackPane(new Label(text + " view is coming soon...")));
+            }
+        });
+
+        sidebar.getChildren().add(btn);
     }
 
-    private VBox buildFooter() {
-        VBox footer = new VBox(2);
-        footer.getStyleClass().add("sidebar-footer");
+    private HBox createHeader() {
+        HBox header = new HBox();
+        header.setPadding(new Insets(15, 25, 15, 25));
+        header.setStyle("-fx-background-color: #2c3e50;");
 
-        HBox userRow = new HBox(10);
-        userRow.setAlignment(Pos.CENTER_LEFT);
+        Label title = new Label("SMART FARM MANAGEMENT SYSTEM");
+        title.setTextFill(Color.WHITE);
+        title.setFont(Font.font("System", FontWeight.BOLD, 18));
 
-        Label avatar = new Label("");
-        avatar.setStyle("-fx-font-size:22px;");
-
-        VBox userInfo = new VBox(1);
-        Label userName = new Label("Manager Core");
-        userName.getStyleClass().add("sidebar-user-name");
-        Label userRole = new Label("ADMIN ACCESS");
-        userRole.getStyleClass().add("sidebar-user-role");
-        userInfo.getChildren().addAll(userName, userRole);
-
-        userRow.getChildren().addAll(avatar, userInfo);
-        footer.getChildren().add(userRow);
-        return footer;
+        header.getChildren().add(title);
+        return header;
     }
 
-    // ── Navigation ────────────────────────────────────────────────────────────
-
-    private void setActive(Button active) {
-        for (Button b : new Button[]{btnZones, btnLivestock, btnCrops, btnProduction, btnSensors, btnAlerts}) {
-            b.getStyleClass().remove("active");
-        }
-        active.getStyleClass().add("active");
-    }
-
-    private void openSwingGui() {
-        try {
-            // Launch the existing Swing SmartFarm GUI in its own thread. The Swing
-            // class initializes its own sample data and runs on the Swing EDT.
-            new Thread(() -> com.farm.demo.view.SmartFarmGUI.main(new String[0])).start();
-        } catch (Exception e) {
-            e.printStackTrace();
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Failed to launch Smart Farm (Swing)");
-            alert.setContentText(e.getClass().getSimpleName() + ": " + e.getMessage());
-            alert.showAndWait();
-        }
-    }
-
-    private void showCrops() {
-        try {
-            setActive(btnCrops);
-            if (cropsView == null) cropsView = new CropsView();
-            setContent(cropsView);
-        } catch (Exception e) {
-            e.printStackTrace();
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Failed to load Crops");
-            alert.setContentText(e.getClass().getSimpleName() + ": " + e.getMessage());
-            alert.showAndWait();
-        }
-    }
-
-    private void showZones() {
-        try {
-            setActive(btnZones);
-            if (zonesView == null) zonesView = new ZonesView();
-            setContent(zonesView);
-        } catch (Exception e) {
-            e.printStackTrace();
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Failed to load Zones Overview");
-            alert.setContentText(e.getClass().getSimpleName() + ": " + e.getMessage());
-            alert.showAndWait();
-        }
-    }
-
-    private void showLivestock() {
-        try {
-            setActive(btnLivestock);
-            if (livestockView == null) livestockView = new LivestockView();
-            setContent(livestockView);
-        } catch (Exception e) {
-            e.printStackTrace();
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Failed to load Livestock Registry");
-            alert.setContentText(e.getClass().getSimpleName() + ": " + e.getMessage());
-            alert.showAndWait();
-        }
-    }
-
-    private void showProduction() {
-        try {
-            setActive(btnProduction);
-            if (productionView == null) productionView = new ProductionView();
-            setContent(productionView);
-        } catch (Exception e) {
-            e.printStackTrace();
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Failed to load Production Records");
-            alert.setContentText(e.getClass().getSimpleName() + ": " + e.getMessage());
-            alert.showAndWait();
-        }
-    }
-
-    private void showSensors() {
-        try {
-            setActive(btnSensors);
-            if (sensorsView == null) sensorsView = new SensorsView();
-            setContent(sensorsView);
-        } catch (Exception e) {
-            e.printStackTrace();
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Failed to load Sensors");
-            alert.setContentText(e.getClass().getSimpleName() + ": " + e.getMessage());
-            alert.showAndWait();
-        }
-    }
-
-    private void showAlerts() {
-        try {
-            setActive(btnAlerts);
-            if (alertsView == null) alertsView = new AlertsView();
-            setContent(alertsView);
-        } catch (Exception e) {
-            e.printStackTrace();
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Failed to load Alerts");
-            alert.setContentText(e.getClass().getSimpleName() + ": " + e.getMessage());
-            alert.showAndWait();
-        }
-    }
-
-    private void setContent(Node node) {
-        contentHolder.getChildren().setAll(node);
-        StackPane.setAlignment(node, Pos.TOP_LEFT);
+    public void setView(javafx.scene.Node view) {
+        contentArea.getChildren().setAll(view);
     }
 }

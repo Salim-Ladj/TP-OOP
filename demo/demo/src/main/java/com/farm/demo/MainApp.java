@@ -8,17 +8,14 @@ import javafx.stage.Stage;
 public class MainApp extends Application {
 
     @Override
-    public void start(Stage stage) {
-        MainLayout layout = new MainLayout();
-        Scene scene = new Scene(layout, 1200, 700);
-        scene.getStylesheets().add(
-                getClass().getResource("/com/farm/demo/styles.css").toExternalForm()
-        );
-        stage.setTitle("SmartFarm Core");
-        stage.setMinWidth(900);
-        stage.setMinHeight(600);
-        stage.setScene(scene);
-        stage.show();
+    public void start(Stage primaryStage) {
+        MainLayout root = new MainLayout();
+
+        Scene scene = new Scene(root, 1200, 650);
+
+        primaryStage.setTitle("Smart Farm IoT Suite");
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 
     public static void main(String[] args) {

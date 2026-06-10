@@ -11,6 +11,7 @@ public class Crop {
     private GrowthStage currentStage;
     private double minPH, maxPH;
     private double minMoisture, maxMoisture;
+    private String zoneId;
 
     // Constructor
     public Crop(CropType type, String species, double minPH, double maxPH, GrowthStage initialStage, double minMoisture, double maxMoisture, LocalDate expectedHarvestDate) {
@@ -93,4 +94,8 @@ public class Crop {
         return species + "_" + plantingDate;
     }
     public void setCurrentStage(GrowthStage stage){this.currentStage=stage;}
+    public void setZoneId(String zoneId) {
+        this.zoneId = zoneId;
+    }
+    public String getZoneId() {return zoneId;}
 }
