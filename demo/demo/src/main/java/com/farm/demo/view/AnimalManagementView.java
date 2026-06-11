@@ -166,9 +166,15 @@ public class AnimalManagementView extends VBox {
         TextField idField = new TextField();
         TextField speciesField = new TextField();
         TextField weightField = new TextField();
+
         ComboBox<AnimalType> typeBox = new ComboBox<>();
         typeBox.getItems().setAll(AnimalType.values());
         typeBox.setValue(AnimalType.RUMINANT);
+
+        // NEW: Health Status selection for registration
+        ComboBox<HealthStatus> healthStatusBox = new ComboBox<>();
+        healthStatusBox.getItems().setAll(HealthStatus.values());
+        healthStatusBox.setValue(HealthStatus.HEALTHY);
 
         ComboBox<Zone> zoneBox = new ComboBox<>();
         zoneBox.getItems().setAll(dataService.getFarm().getZones().stream()
@@ -181,6 +187,9 @@ public class AnimalManagementView extends VBox {
         grid.add(new Label("Weight:"), 2, 1); grid.add(weightField, 3, 1);
         grid.add(new Label("Target Zone:"), 0, 2); grid.add(zoneBox, 1, 2);
 
+        // Add the Health Status box to the grid
+        grid.add(new Label("Initial Health:"), 2, 2); grid.add(healthStatusBox, 3, 2);
+
         Button btnAdd = new Button("Register Animal");
         btnAdd.setOnAction(e -> {
             try {
@@ -190,16 +199,27 @@ public class AnimalManagementView extends VBox {
                     return;
                 }
 
-                Animal a = new Animal(typeBox.getValue(), idField.getText(), speciesField.getText(),
-                        0, Double.parseDouble(weightField.getText()), HealthStatus.HEALTHY);
+                // Pass healthStatusBox.getValue() to the constructor
+                Animal a = new Animal(
+                        typeBox.getValue(),
+                        idField.getText(),
+                        speciesField.getText(),
+                        0,
+                        Double.parseDouble(weightField.getText()),
+                        healthStatusBox.getValue()
+                );
 
-                // CRITICAL: Set the Zone ID so the filter works!
+                // Set the Zone ID so the filter works
                 a.setZoneId(selectedZone.getCode());
 
                 selectedZone.addEntity(a);
                 dataService.refreshAll();
 
-                idField.clear(); speciesField.clear(); weightField.clear();
+                // Clear fields
+                idField.clear();
+                speciesField.clear();
+                weightField.clear();
+                showInfo("Animal registered successfully as " + healthStatusBox.getValue());
             } catch (Exception ex) {
                 showError("Error: " + ex.getMessage());
             }

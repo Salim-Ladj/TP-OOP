@@ -1,4 +1,4 @@
-CZ-01|BiometricSensor|FIELD-TEMP|ACTIVE|5.0|40.0|Celsius
+CZ-01|BiometricSensor|FIELD-TEMP|ACTIVE|4.0|40.0|Celsius
 CZ-01|BiometricSensor|FIELD-MOIST|ACTIVE|30.0|70.0|%
 CZ-02|BiometricSensor|GH-TEMP|ACTIVE|18.0|28.0|Celsius
 CZ-02|BiometricSensor|GH-HUMID|ACTIVE|40.0|80.0|%

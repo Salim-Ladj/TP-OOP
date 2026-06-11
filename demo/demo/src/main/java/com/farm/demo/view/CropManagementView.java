@@ -10,7 +10,6 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import java.time.LocalDate;
-import java.util.Optional;
 
 public class CropManagementView extends VBox {
 
@@ -19,22 +18,19 @@ public class CropManagementView extends VBox {
     private FilteredList<Crop> filteredCrops;
 
     public CropManagementView() {
-        setSpacing(15); // Slightly tighter spacing
+        setSpacing(15);
         setPadding(new Insets(10));
 
-        Label title = new Label("Crop Management");
+        Label title = new Label("Crop Management & Reporting");
         title.setFont(Font.font("System", FontWeight.BOLD, 20));
 
-        // 1. Filter Bar (Species and Zone)
-        HBox filterBar = createFilterBar();
+        // Initialize FilteredList first so setupTable can use it
+        filteredCrops = new FilteredList<>(dataService.getCrops(), p -> true);
 
-        // 2. Table
+        HBox filterBar = createFilterBar();
         setupTable();
 
-        // 3. Actions
         HBox actions = createActionButtons();
-
-        // 4. Registration Form
         VBox registrationForm = createRegistrationForm();
 
         getChildren().addAll(title, filterBar, table, actions, new Separator(), registrationForm);
@@ -50,18 +46,13 @@ public class CropManagementView extends VBox {
         TextField zoneSearch = new TextField();
         zoneSearch.setPromptText("Filter by Zone Code...");
 
-        filteredCrops = new FilteredList<>(dataService.getCrops(), p -> true);
-
-        // Combined Listener for both search fields
+        // Logic for filtering
         java.util.function.Consumer<String> filterLogic = (val) -> {
-            // Inside the filteredCrops logic:
             filteredCrops.setPredicate(crop -> {
                 String sText = speciesSearch.getText().toLowerCase();
                 String zText = zoneSearch.getText().toLowerCase();
 
                 boolean matchesSpecies = crop.getSpecies().toLowerCase().contains(sText);
-
-                // FIX: Now filters by the actual zoneId attribute
                 boolean matchesZone = crop.getZoneId() != null &&
                         crop.getZoneId().toLowerCase().contains(zText);
 
@@ -84,7 +75,6 @@ public class CropManagementView extends VBox {
         TableColumn<Crop, String> speciesCol = new TableColumn<>("Species");
         speciesCol.setCellValueFactory(new PropertyValueFactory<>("species"));
 
-        // FIX: Now looks for the getZoneId() method we added to Crop.java
         TableColumn<Crop, String> zoneCol = new TableColumn<>("Zone Code");
         zoneCol.setCellValueFactory(new PropertyValueFactory<>("zoneId"));
 
@@ -106,14 +96,108 @@ public class CropManagementView extends VBox {
         btnUpdateStage.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white;");
         btnUpdateStage.setOnAction(e -> {
             Crop selected = table.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                openUpdateStageDialog(selected);
+            if (selected != null) openUpdateStageDialog(selected);
+            else showError("Select a crop from the table.");
+        });
+
+        Button btnReport = new Button("Generate Zone Status Report");
+        btnReport.setStyle("-fx-background-color: #34495e; -fx-text-fill: white;");
+        btnReport.setOnAction(e -> openZoneReportDialog());
+
+        return new HBox(10, btnUpdateStage, btnReport);
+    }
+
+    private void openZoneReportDialog() {
+        ChoiceDialog<Zone> dialog = new ChoiceDialog<>();
+        dialog.getItems().addAll(dataService.getFarm().getZones().stream().filter(z -> z instanceof CropZone).toList());
+        dialog.setTitle("Zone Report");
+        dialog.setHeaderText("Generate Status Report");
+        dialog.setContentText("Choose a Crop Zone:");
+
+        dialog.showAndWait().ifPresent(zone -> {
+            CropZone cz = (CropZone) zone;
+            StringBuilder report = new StringBuilder("Status Report for " + cz.getName() + " (" + cz.getCode() + ")\n");
+            report.append("==========================================\n\n");
+
+            if (cz.getCrops().isEmpty()) {
+                report.append("No crops currently registered in this zone.");
             } else {
-                showError("Select a crop from the table.");
+                for (Crop c : cz.getCrops()) {
+                    report.append("Species: ").append(c.getSpecies()).append("\n")
+                            .append("Stage: ").append(c.getCurrentStage()).append("\n")
+                            .append("Harvest: ").append(c.getExpectedHarvestDate()).append("\n")
+                            .append("Optimal pH: ").append(c.getMinPH()).append("-").append(c.getMaxPH()).append("\n")
+                            .append("------------------------------------------\n");
+                }
+            }
+
+            TextArea textArea = new TextArea(report.toString());
+            textArea.setEditable(false);
+            textArea.setWrapText(true);
+
+            javafx.scene.control.Alert reportAlert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+            reportAlert.getDialogPane().setContent(textArea);
+            reportAlert.setTitle("Crop Status Report");
+            reportAlert.setHeaderText(null);
+            reportAlert.show();
+        });
+    }
+
+    private VBox createRegistrationForm() {
+        VBox form = new VBox(10);
+        Label lbl = new Label("Register New Crop with Soil Requirements");
+        lbl.setFont(Font.font("System", FontWeight.BOLD, 14));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10); grid.setVgap(8);
+
+        TextField speciesField = new TextField();
+        ComboBox<CropType> typeBox = new ComboBox<>();
+        typeBox.getItems().setAll(CropType.values());
+        DatePicker harvestPicker = new DatePicker(LocalDate.now().plusMonths(3));
+        ComboBox<Zone> zoneBox = new ComboBox<>();
+        zoneBox.getItems().setAll(dataService.getFarm().getZones().stream().filter(z -> z instanceof CropZone).toList());
+
+        TextField minPH = new TextField("6.0"); minPH.setPrefWidth(50);
+        TextField maxPH = new TextField("7.5"); maxPH.setPrefWidth(50);
+        TextField minMoist = new TextField("20.0"); minMoist.setPrefWidth(50);
+        TextField maxMoist = new TextField("60.0"); maxMoist.setPrefWidth(50);
+
+        grid.add(new Label("Species:"), 0, 0); grid.add(speciesField, 1, 0);
+        grid.add(new Label("Type:"), 0, 1); grid.add(typeBox, 1, 1);
+        grid.add(new Label("Target Zone:"), 0, 2); grid.add(zoneBox, 1, 2);
+
+        grid.add(new Label("Expected Harvest:"), 2, 0); grid.add(harvestPicker, 3, 0);
+        grid.add(new Label("pH Range (Min/Max):"), 2, 1);
+        grid.add(new HBox(5, minPH, new Label("-"), maxPH), 3, 1);
+        grid.add(new Label("Moisture % (Min/Max):"), 2, 2);
+        grid.add(new HBox(5, minMoist, new Label("-"), maxMoist), 3, 2);
+
+        Button btnAdd = new Button("Register & Add Crop");
+        btnAdd.setOnAction(e -> {
+            try {
+                Zone z = zoneBox.getValue();
+                Crop c = new Crop(
+                        typeBox.getValue(),
+                        speciesField.getText(),
+                        Double.parseDouble(minPH.getText()),
+                        Double.parseDouble(maxPH.getText()),
+                        GrowthStage.SOWING,
+                        Double.parseDouble(minMoist.getText()),
+                        Double.parseDouble(maxMoist.getText()),
+                        harvestPicker.getValue()
+                );
+                c.setZoneId(z.getCode());
+                z.addEntity(c);
+                dataService.refreshAll();
+                showInfo("Crop Registered Successfully.");
+            } catch (Exception ex) {
+                showError("Input Error: Ensure all numbers are valid.");
             }
         });
 
-        return new HBox(10, btnUpdateStage);
+        form.getChildren().addAll(lbl, grid, btnAdd);
+        return form;
     }
 
     private void openUpdateStageDialog(Crop crop) {
@@ -126,56 +210,6 @@ public class CropManagementView extends VBox {
             crop.updateGrowthStage(newStage);
             table.refresh();
         });
-    }
-
-    private VBox createRegistrationForm() {
-        VBox form = new VBox(10);
-        Label lbl = new Label("Register New Crop");
-        lbl.setFont(Font.font("System", FontWeight.BOLD, 14));
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10); grid.setVgap(8);
-
-        TextField speciesField = new TextField();
-        ComboBox<CropType> typeBox = new ComboBox<>();
-        typeBox.getItems().setAll(CropType.values());
-        typeBox.setValue(CropType.VEGETABLES);
-
-        DatePicker harvestPicker = new DatePicker(LocalDate.now().plusMonths(3));
-        ComboBox<Zone> zoneBox = new ComboBox<>();
-        zoneBox.getItems().setAll(dataService.getFarm().getZones().stream()
-                .filter(z -> z instanceof CropZone).toList());
-
-        grid.add(new Label("Species:"), 0, 0); grid.add(speciesField, 1, 0);
-        grid.add(new Label("Type:"), 0, 1); grid.add(typeBox, 1, 1);
-        grid.add(new Label("Target Zone:"), 2, 0); grid.add(zoneBox, 3, 0);
-        grid.add(new Label("Harvest Date:"), 2, 1); grid.add(harvestPicker, 3, 1);
-
-        Button btnAdd = new Button("Add Crop");
-        btnAdd.setOnAction(e -> {
-            try {
-                Zone z = zoneBox.getValue();
-                if (z == null) { showError("Select a zone."); return; }
-
-                Crop c = new Crop(typeBox.getValue(), speciesField.getText(),
-                        6.0, 7.5, GrowthStage.SOWING, 20.0, 80.0, harvestPicker.getValue());
-
-                // FIX: Set the zone code so it can be displayed and filtered
-                c.setZoneId(z.getCode());
-
-                z.addEntity(c);
-                dataService.refreshAll();
-
-                showInfo("Crop added to " + z.getCode());
-                speciesField.clear();
-            } catch (Exception ex) {
-                showError("Input error.");
-            }
-        });
-
-
-        form.getChildren().addAll(lbl, grid, btnAdd);
-        return form;
     }
 
     private void showInfo(String msg) {

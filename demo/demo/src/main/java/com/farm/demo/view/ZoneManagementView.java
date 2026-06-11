@@ -45,15 +45,34 @@ public class ZoneManagementView extends VBox {
         TableColumn<Zone, String> nameCol = new TableColumn<>("Name");
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        // Custom column to show the Zone Type (Class name)
         TableColumn<Zone, String> typeCol = new TableColumn<>("Type");
         typeCol.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getClass().getSimpleName()));
 
+        // --- NEW COLUMN: ENTITY COUNT ---
+        TableColumn<Zone, Integer> countCol = new TableColumn<>("Entities");
+        countCol.setCellValueFactory(cellData -> {
+            Zone z = cellData.getValue();
+            int count = 0;
+
+            // Check the type of zone to count the specific entities
+            if (z instanceof LivestockZone lz) {
+                count = lz.getAnimals().size();
+            } else if (z instanceof AquacultureZone az) {
+                count = az.getAnimals().size();
+            } else if (z instanceof CropZone cz) {
+                count = cz.getCrops().size();
+            }
+
+            return new javafx.beans.property.SimpleIntegerProperty(count).asObject();
+        });
+        // --------------------------------
+
         TableColumn<Zone, String> statusCol = new TableColumn<>("Status");
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        table.getColumns().addAll(codeCol, nameCol, typeCol, statusCol);
+        // Add the new column to the table
+        table.getColumns().addAll(codeCol, nameCol, typeCol, countCol, statusCol);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
 
