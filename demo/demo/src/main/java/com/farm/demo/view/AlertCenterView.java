@@ -1,9 +1,9 @@
 package com.farm.demo.view;
 
-import com.farm.demo.model.SeverityLevel; // Import specific models
+import com.farm.demo.model.SeverityLevel;
 import com.farm.demo.model.Zone;
-// We do NOT import com.farm.demo.model.Alert to avoid conflict
 import com.farm.demo.service.DataService;
+import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -12,179 +12,174 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 public class AlertCenterView extends VBox {
 
     private final DataService dataService = DataService.getInstance();
 
-    // Use fully qualified names for your model Alert
     private TableView<com.farm.demo.model.Alert> alertsTable;
     private FilteredList<com.farm.demo.model.Alert> filteredAlerts;
 
     private ComboBox<String> zoneFilter;
     private ComboBox<SeverityLevel> severityFilter;
+    private DatePicker startDatePicker;
+    private DatePicker endDatePicker;
+    private CheckBox showHistoryBtn; // Requirement: Browse history
 
     public AlertCenterView() {
-        setSpacing(20);
+        setSpacing(15);
         setPadding(new Insets(10));
 
-        Label title = new Label("Incident & Alert Control Center");
-        title.setFont(Font.font("System", FontWeight.BOLD, 20));
+        Label title = new Label("Incident Control & Alert History");
+        title.setFont(Font.font("System", FontWeight.BOLD, 22));
 
-        HBox filterBar = createFilterBar();
+        // 1. Enhanced Filter Bar
+        VBox filters = createAdvancedFilterBar();
 
-        HBox body = new HBox(15);
-        VBox.setVgrow(body, Priority.ALWAYS);
-
+        // 2. Table Area
         setupAlertsTable();
-        HBox.setHgrow(alertsTable, Priority.ALWAYS);
+        VBox.setVgrow(alertsTable, Priority.ALWAYS);
 
-        VBox actionPane = createActionPane();
+        // 3. Action Buttons
+        HBox actions = createActionPane();
 
-        body.getChildren().addAll(alertsTable, actionPane);
-        getChildren().addAll(title, filterBar, body);
+        getChildren().addAll(title, filters, alertsTable, actions);
+
+        // Initial Refresh
+        refreshAlertData();
     }
 
-    private HBox createFilterBar() {
-        HBox container = new HBox(10);
-        container.setPadding(new Insets(5));
-        container.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+    private VBox createAdvancedFilterBar() {
+        VBox container = new VBox(10);
+        container.setPadding(new Insets(10));
+        container.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #ddd;");
 
-        filteredAlerts = new FilteredList<>(dataService.getActiveAlerts(), p -> true);
+        HBox line1 = new HBox(15);
+        line1.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
         zoneFilter = new ComboBox<>();
-        zoneFilter.getItems().add("All");
+        zoneFilter.getItems().add("All Zones");
         dataService.getZones().forEach(z -> zoneFilter.getItems().add(z.getCode()));
-        zoneFilter.setValue("All");
+        zoneFilter.setValue("All Zones");
 
         severityFilter = new ComboBox<>();
+        severityFilter.setPromptText("Severity");
         severityFilter.getItems().addAll(SeverityLevel.values());
 
-        Button btnClear = new Button("Clear Filters");
-        btnClear.setOnAction(e -> {
-            zoneFilter.setValue("All");
-            severityFilter.getSelectionModel().clearSelection();
-            filteredAlerts.setPredicate(p -> true);
-        });
+        showHistoryBtn = new CheckBox("Show Dismissed/Acknowledged (History)");
+        showHistoryBtn.setStyle("-fx-font-weight: bold;");
 
-        zoneFilter.valueProperty().addListener((o, old, newVal) -> applyFiltering());
-        severityFilter.valueProperty().addListener((o, old, newVal) -> applyFiltering());
+        line1.getChildren().addAll(new Label("Zone:"), zoneFilter, new Label("Severity:"), severityFilter, showHistoryBtn);
 
-        container.getChildren().addAll(
-                new Label("Zone:"), zoneFilter,
-                new Label("Severity:"), severityFilter,
-                btnClear
-        );
+        HBox line2 = new HBox(15);
+        line2.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        startDatePicker = new DatePicker(LocalDate.now().minusDays(7));
+        endDatePicker = new DatePicker(LocalDate.now());
+        Button btnApply = new Button("Apply Filters");
+        btnApply.setStyle("-fx-background-color: #34495e; -fx-text-fill: white;");
+        btnApply.setOnAction(e -> applyFiltering());
+
+        line2.getChildren().addAll(new Label("From:"), startDatePicker, new Label("To:"), endDatePicker, btnApply);
+
+        container.getChildren().addAll(line1, line2);
         return container;
     }
 
     private void applyFiltering() {
         String selectedZone = zoneFilter.getValue();
         SeverityLevel selectedSeverity = severityFilter.getValue();
+        boolean showHistory = showHistoryBtn.isSelected();
+        LocalDateTime start = startDatePicker.getValue().atStartOfDay();
+        LocalDateTime end = endDatePicker.getValue().atTime(LocalTime.MAX);
 
         filteredAlerts.setPredicate(alert -> {
-            boolean matchesZone = (selectedZone == null || selectedZone.equals("All") || alert.getZoneId().equals(selectedZone));
-            boolean matchesSeverity = (selectedSeverity == null || alert.getSeverityLevel() == selectedSeverity);
-            return matchesZone && matchesSeverity;
+            // 1. Status Filter (Active vs History)
+            if (!showHistory && alert.isAcknowledged()) return false;
+
+            // 2. Zone Filter
+            if (selectedZone != null && !selectedZone.equals("All Zones") && !alert.getZoneId().equals(selectedZone)) return false;
+
+            // 3. Severity Filter
+            if (selectedSeverity != null && alert.getSeverityLevel() != selectedSeverity) return false;
+
+            // 4. Date Filter
+            if (alert.getAlertTimestamp().isBefore(start) || alert.getAlertTimestamp().isAfter(end)) return false;
+
+            return true;
         });
     }
 
     private void setupAlertsTable() {
         alertsTable = new TableView<>();
+
+        // IMPORTANT: We wrap the list from AlertManager directly to ensure we see ALL alerts
+        // The DataService refreshAll() logic needs to sync with this.
+        filteredAlerts = new FilteredList<>(dataService.getActiveAlerts(), p -> true);
         alertsTable.setItems(filteredAlerts);
-        alertsTable.setPlaceholder(new Label("No active alerts. Operational status normal."));
 
-        // Use fully qualified model path for TableColumn types
-        TableColumn<com.farm.demo.model.Alert, Integer> idCol = new TableColumn<>("ID");
-        idCol.setCellValueFactory(new PropertyValueFactory<>("alertId"));
-        idCol.setPrefWidth(50);
-
-        TableColumn<com.farm.demo.model.Alert, String> zoneCol = new TableColumn<>("Zone");
-        zoneCol.setCellValueFactory(new PropertyValueFactory<>("zoneId"));
-
-        TableColumn<com.farm.demo.model.Alert, String> sensorCol = new TableColumn<>("Sensor");
-        sensorCol.setCellValueFactory(new PropertyValueFactory<>("sensorUniqueCode"));
-
-        TableColumn<com.farm.demo.model.Alert, Double> valCol = new TableColumn<>("Value");
-        valCol.setCellValueFactory(new PropertyValueFactory<>("readingValue"));
-
-        TableColumn<com.farm.demo.model.Alert, SeverityLevel> sevCol = new TableColumn<>("Severity");
+        TableColumn<com.farm.demo.model.Alert, SeverityLevel> sevCol = new TableColumn<>("!");
         sevCol.setCellValueFactory(new PropertyValueFactory<>("severityLevel"));
-
-        sevCol.setCellFactory(col -> new TableCell<com.farm.demo.model.Alert, SeverityLevel>() {
+        sevCol.setPrefWidth(40);
+        sevCol.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(SeverityLevel item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null); setStyle("");
+                if (item == null || empty) {
+                    setStyle(""); setText("");
                 } else {
-                    setText(item.name());
-                    if (item == SeverityLevel.CRITICAL) {
-                        setStyle("-fx-text-fill: white; -fx-background-color: #d9534f; -fx-font-weight: bold;");
-                    } else if (item == SeverityLevel.WARNING) {
-                        setStyle("-fx-text-fill: black; -fx-background-color: #f0ad4e; -fx-font-weight: bold;");
-                    } else {
-                        setStyle("-fx-text-fill: white; -fx-background-color: #5cb85c;");
-                    }
+                    if (item == SeverityLevel.CRITICAL) setStyle("-fx-background-color: red; -fx-text-fill: white;");
+                    else if (item == SeverityLevel.WARNING) setStyle("-fx-background-color: orange;");
+                    else setStyle("-fx-background-color: green; -fx-text-fill: white;");
+                    setText(item.name().substring(0, 1));
                 }
             }
         });
 
-        TableColumn<com.farm.demo.model.Alert, String> msgCol = new TableColumn<>("Description Message");
-        msgCol.setCellValueFactory(new PropertyValueFactory<>("message"));
-        msgCol.setPrefWidth(220);
+        TableColumn<com.farm.demo.model.Alert, LocalDateTime> timeCol = new TableColumn<>("Timestamp");
+        timeCol.setCellValueFactory(new PropertyValueFactory<>("alertTimestamp"));
 
-        alertsTable.getColumns().addAll(idCol, zoneCol, sensorCol, valCol, sevCol, msgCol);
+        TableColumn<com.farm.demo.model.Alert, String> zoneCol = new TableColumn<>("Zone");
+        zoneCol.setCellValueFactory(new PropertyValueFactory<>("zoneId"));
+
+        TableColumn<com.farm.demo.model.Alert, String> msgCol = new TableColumn<>("Message");
+        msgCol.setCellValueFactory(new PropertyValueFactory<>("message"));
+
+        TableColumn<com.farm.demo.model.Alert, Boolean> statusCol = new TableColumn<>("Ack?");
+        statusCol.setCellValueFactory(new PropertyValueFactory<>("isAcknowledged"));
+
+        alertsTable.getColumns().addAll(sevCol, timeCol, zoneCol, msgCol, statusCol);
         alertsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
 
-    private VBox createActionPane() {
-        VBox pane = new VBox(15);
-        pane.setPadding(new Insets(10));
-        pane.setStyle("-fx-border-color: #ccc; -fx-background-radius: 5;");
-        pane.setPrefWidth(200);
-
-        Label lblTitle = new Label("Alert Actions");
-        lblTitle.setFont(Font.font("System", FontWeight.BOLD, 13));
-
-        Button btnAcknowledge = new Button("Acknowledge");
-        btnAcknowledge.setMaxWidth(Double.MAX_VALUE);
-        btnAcknowledge.setStyle("-fx-background-color: #5cb85c; -fx-text-fill: white;");
-        btnAcknowledge.setOnAction(e -> {
+    private HBox createActionPane() {
+        Button btnAck = new Button("Acknowledge Selected");
+        btnAck.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white;");
+        btnAck.setOnAction(e -> {
             com.farm.demo.model.Alert selected = alertsTable.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                String outcome = dataService.getFarm().acknowledgeAlert(selected.getAlertId());
-                showInfo("Alert Acknowledged", outcome);
+                selected.acknowledge();
                 dataService.refreshAll();
-            } else {
-                showError("Please select an alert from the table.");
+                alertsTable.refresh();
+                applyFiltering(); // Re-hide if not in history mode
             }
         });
 
-        Button btnDismiss = new Button("Dismiss");
-        btnDismiss.setMaxWidth(Double.MAX_VALUE);
-        btnDismiss.setStyle("-fx-background-color: #d9534f; -fx-text-fill: white;");
-        btnDismiss.setOnAction(e -> {
-            com.farm.demo.model.Alert selected = alertsTable.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                String outcome = dataService.getFarm().dismissAlert(selected.getAlertId());
-                showInfo("Alert Dismissed", outcome);
-                dataService.refreshAll();
-            } else {
-                showError("Please select an alert from the table.");
-            }
-        });
+        Button btnRefresh = new Button("Refresh List");
+        btnRefresh.setOnAction(e -> refreshAlertData());
 
-        pane.getChildren().addAll(lblTitle, btnAcknowledge, btnDismiss);
-        return pane;
+        HBox actions = new HBox(10, btnAck, btnRefresh);
+        return actions;
     }
 
-    private void showInfo(String title, String content) {
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-        alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(content); alert.showAndWait();
-    }
-
-    private void showError(String content) {
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-        alert.setTitle("Error"); alert.setHeaderText(null); alert.setContentText(content); alert.showAndWait();
+    /**
+     * Call this to force the UI to pull new alerts from the backend
+     */
+    public void refreshAlertData() {
+        dataService.refreshAll();
+        applyFiltering();
     }
 }

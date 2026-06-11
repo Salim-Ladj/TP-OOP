@@ -72,6 +72,7 @@ public class DataService {
 
         // 2. Synchronisation de la liste des alertes actives triées par gravité
         activeAlerts.setAll(AlertManager.getActiveAlertsSortedBySeverity());
+        activeAlerts.setAll(AlertManager.getAlertHistory(null, null, null, null, null));
     }
 
     public ObservableList<Animal> getAllAnimals() {
