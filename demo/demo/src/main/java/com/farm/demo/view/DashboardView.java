@@ -41,7 +41,7 @@ public class DashboardView extends VBox {
 
         container.getChildren().addAll(
                 createTile("Total Zones", String.valueOf(dataService.getTotalZones()), "#3498db"),
-                createTile("Active Alerts", String.valueOf(dataService.getActiveAlertCount()), "#e74c3c"),
+                //createTile("Active Alerts", String.valueOf(dataService.getActiveAlertCount()), "#e74c3c"),
                 createTile("Livestock", String.valueOf(dataService.getTotalAnimals()), "#2ecc71"),
                 createTile("Crops", String.valueOf(dataService.getTotalCrops()), "#f1c40f")
         );
